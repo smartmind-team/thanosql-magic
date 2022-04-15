@@ -41,7 +41,7 @@ class ThanosMagic(Magics):
 
             return
         
-        else
+        else:
             return res
 
 # In order to actually use these magics, you must register them with a
