@@ -11,7 +11,8 @@ def convert_local_ns(query_string, local_ns) -> str:
     # modifying query_string
     for i in range(len(var_list)):
         var = local_ns.get(var_list[i])
+
         if var:
-            query_string = query_string.replace(var_list[i],str(var))
+            query_string = query_string.replace(var_list[i],f"'{str(var)}'")
 
     return query_string
