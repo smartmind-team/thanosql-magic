@@ -1,0 +1,3 @@
+# thanosSQL_magic
+
+SmartMind Thanos SQL's %%thanos magic for IPython...
