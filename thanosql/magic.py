@@ -30,16 +30,18 @@ class ThanosMagic(Magics):
         }
         
         res = requests.post('http://localhost:8000/api/v1/query', data=json.dumps(data))
-        data = res.json()
-        final_query_string = data.get('final_query_string')
-        print(f'---Final Query String---\n{final_query_string}')
-        
-        query_result = data.get('query_result')
-        if query_result:
-            df = pd.read_json(query_result, orient='columns')
-            return df
-        
-        return
+   
+        if res.status_code == 200:
+            data = res.json()
+            final_query_string = data.get('final_query_string')
+            print(f'---Final Query String---\n{final_query_string}')
+            
+            query_result = data.get('query_result')
+            if query_result:
+                df = pd.read_json(query_result, orient='columns')
+                return df
+
+        return res
        
 
 # In order to actually use these magics, you must register them with a
