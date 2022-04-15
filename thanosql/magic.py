@@ -33,16 +33,16 @@ class ThanosMagic(Magics):
    
         if res.status_code == 200:
             data = res.json()
-            final_query_string = data.get('final_query_string')
-            print(f'---Final Query String---\n{final_query_string}')
-            
-            query_result = data.get('query_result')
+            query_result = data.get('final_result')
+
             if query_result:
                 df = pd.read_json(query_result, orient='columns')
                 return df
 
-        return res
-       
+            return
+        
+        else
+            return res
 
 # In order to actually use these magics, you must register them with a
 # running IPython.
