@@ -19,3 +19,13 @@ def convert_local_ns(query_string, local_ns) -> str:
             query_string = query_string.replace(var_list[i], f"'{str(var)}'")
 
     return query_string
+
+
+def is_url(s):
+    p = re.compile(r"^\w*://\w*")
+    m = p.match(s)
+
+    if m:
+        return True
+    else:
+        return False

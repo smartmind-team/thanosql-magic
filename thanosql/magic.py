@@ -1,24 +1,12 @@
 import json
 import os
-import re
 
 import pandas as pd
 import requests
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from requests.exceptions import ConnectionError
 
-from .parse import convert_local_ns
-
-
-def is_url(s):
-    p = re.compile(r"^\w*://\w*")
-    m = p.match(s)
-
-    if m:
-        return True
-    else:
-        return False
-
+from .parse import convert_local_ns, is_url
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
 
@@ -46,15 +34,13 @@ class ThanosMagic(Magics):
             return
 
         query_string = convert_local_ns(cell, local_ns)
-        print(query_string)
 
         data = {"query_string": query_string}
-
         try:
             res = requests.post(os.getenv("API_URL"), data=json.dumps(data))
         except ConnectionError as e:
             print(e)
-            print("ThanoSQL Engine is not ready for connection.")
+            print("\nThanoSQL Engine is not ready for connection.")
             return
 
         if res.status_code == 200:
