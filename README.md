@@ -1,3 +1,3 @@
-# thanosSQL_magic
+# ThanoSQL Magic
 
-SmartMind Thanos SQL's %%thanos magic for IPython...
+SmartMind `ThanoSQL` Ipython Magic for Jupyter Lab
