@@ -6,7 +6,7 @@ import requests
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from requests.exceptions import ConnectionError
 
-from .parse import convert_local_ns, is_url
+from thanosql.parse import convert_local_ns, is_url, split_string_to_query_list
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
 
@@ -33,7 +33,7 @@ class ThanosMagic(Magics):
         if not cell:
             return
 
-        query_list = map(lambda x: x.strip(), cell.split(";"))
+        query_list = split_string_to_query_list(cell)
 
         res = None
         for query_string in query_list:
