@@ -29,3 +29,10 @@ def is_url(s):
         return True
     else:
         return False
+
+
+def split_string_to_query_list(s: str) -> list:
+    """
+    Split semi-colon containing string to query list and exclude empty string('').
+    """
+    return list(filter(None, map(lambda x: x.strip(), s.split(";"))))

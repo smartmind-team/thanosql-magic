@@ -6,7 +6,7 @@ import requests
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 from requests.exceptions import ConnectionError
 
-from .parse import convert_local_ns, is_url
+from thanosql.parse import convert_local_ns, is_url, split_string_to_query_list
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
 
@@ -33,24 +33,26 @@ class ThanosMagic(Magics):
         if not cell:
             return
 
-        query_string = convert_local_ns(cell, local_ns)
+        query_list = split_string_to_query_list(cell)
 
-        data = {"query_string": query_string}
-        try:
-            res = requests.post(os.getenv("API_URL"), data=json.dumps(data))
-        except ConnectionError as e:
-            print(e)
-            print("\nThanoSQL Engine is not ready for connection.")
-            return
+        res = None
+        for query_string in query_list:
+            if query_string:
+                query_string = convert_local_ns(query_string, local_ns)
 
-        if res.status_code == 200:
-            data = res.json()
-            query_result = data.get("final_result")
-            if query_result:
-                df = pd.read_json(query_result, orient="columns")
-                return df
-        else:
-            return res
+                data = {"query_string": query_string}
+                try:
+                    res = requests.post(os.getenv("API_URL"), data=json.dumps(data))
+                except ConnectionError as e:
+                    print(e)
+                    print("\nThanoSQL Engine is not ready for connection.")
+
+                if res.status_code == 200:
+                    data = res.json()
+                    query_result = data.get("final_result")
+                    if query_result:
+                        res = pd.read_json(query_result, orient="columns")
+        return res
 
 
 # In order to actually use these magics, you must register them with a
