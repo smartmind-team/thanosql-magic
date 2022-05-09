@@ -43,15 +43,19 @@ class ThanosMagic(Magics):
                 data = {"query_string": query_string}
                 try:
                     res = requests.post(os.getenv("API_URL"), data=json.dumps(data))
+                    if res.status_code == 200:
+                        data = res.json()
+                        query_result = data.get("final_result")
+                        if query_result:
+                            res = pd.read_json(query_result, orient="columns")
+                    else:
+                        data = res.json()
+                        result = data.get('reason')
+                        if result:
+                            print(result)
                 except ConnectionError as e:
                     print(e)
                     print("\nThanoSQL Engine is not ready for connection.")
-
-                if res.status_code == 200:
-                    data = res.json()
-                    query_result = data.get("final_result")
-                    if query_result:
-                        res = pd.read_json(query_result, orient="columns")
         return res
 
 
