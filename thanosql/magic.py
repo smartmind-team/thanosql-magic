@@ -4,8 +4,8 @@ import os
 import pandas as pd
 import requests
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
-from requests.exceptions import ConnectionError
 
+from thanosql.exceptions import ThanoSQLConnectionError, ThanoSQLInternalError
 from thanosql.parse import convert_local_ns, is_url, split_string_to_query_list
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
@@ -43,19 +43,22 @@ class ThanosMagic(Magics):
                 data = {"query_string": query_string}
                 try:
                     res = requests.post(os.getenv("API_URL"), data=json.dumps(data))
-                    if res.status_code == 200:
-                        data = res.json()
-                        query_result = data.get("final_result")
-                        if query_result:
-                            res = pd.read_json(query_result, orient="columns")
-                    else:
-                        data = res.json()
-                        result = data.get('reason')
-                        if result:
-                            print(result)
-                except ConnectionError as e:
-                    print(e)
-                    print("\nThanoSQL Engine is not ready for connection.")
+                except:
+                    raise ThanoSQLConnectionError(
+                        "ThanoSQL Engine is not ready for connection."
+                    )
+
+                if res.status_code == 200:
+                    data = res.json()
+                    query_result = data.get("final_result")
+                    if query_result:
+                        res = pd.read_json(query_result, orient="columns")
+
+                elif res.status_code == 500:
+                    data = res.json()
+                    reason = data.get("reason")
+                    if reason:
+                        raise ThanoSQLInternalError(reason)
         return res
 
 
