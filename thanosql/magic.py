@@ -5,25 +5,29 @@ import pandas as pd
 import requests
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 
-from thanosql.exceptions import ThanoSQLConnectionError, ThanoSQLInternalError
-from thanosql.parse import convert_local_ns, is_url, split_string_to_query_list
+from thanosql.exceptions import ThanoSQLConnectionError, ThanoSQLInternalError, ThanoSQLSyntaxError
+from thanosql.parse import convert_local_ns, is_url, is_multiple_queries, is_api_token
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
-
 
 @magics_class
 class ThanosMagic(Magics):
     @needs_local_scope
     @line_cell_magic
-    def thanosql(self, line=None, cell=None, local_ns={}):
-        if not os.getenv("API_URL"):
-            os.environ["API_URL"] = DEFAULT_API_URL
-
+    def thanosql(self, line:str =None, cell:str =None, local_ns={}):
         if line:
-            # api url change for debugging
             if is_url(line):
-                os.environ["API_URL"] = line
-                print(f"API URL is changed to {line}")
+                # Set API URL
+                api_url = line.strip()
+                os.environ["API_URL"] = api_url
+                print(f"API URL is changed to {api_url}")
+                return
+
+            elif is_api_token(line):
+                # Set API Token
+                api_token = line.strip().split("API_TOKEN=")[-1]
+                os.environ["API_TOKEN"] = api_token
+                print(f"API Token is set to '{api_token}'")
                 return
 
             # 'line' will treat as same as 'cell'
@@ -33,32 +37,44 @@ class ThanosMagic(Magics):
         if not cell:
             return
 
-        query_list = split_string_to_query_list(cell)
+        api_url = os.getenv("API_URL", DEFAULT_API_URL)
+        api_token = os.getenv("API_TOKEN", None)
+
+        if not api_token:
+            raise ThanoSQLConnectionError(
+                "An API Token is requierd. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
+                )
+        header = {'Authorization': 'Bearer ' + api_token}
+
+        query_string = cell
+        if is_multiple_queries(query_string):
+            raise ThanoSQLSyntaxError(
+                "Multiple Queries are not supported."
+            )
 
         res = None
-        for query_string in query_list:
-            if query_string:
-                query_string = convert_local_ns(query_string, local_ns)
+        if query_string:
+            query_string = convert_local_ns(query_string, local_ns)
 
-                data = {"query_string": query_string}
-                try:
-                    res = requests.post(os.getenv("API_URL"), data=json.dumps(data))
-                except:
-                    raise ThanoSQLConnectionError(
-                        "ThanoSQL Engine is not ready for connection."
-                    )
+            data = {"query_string": query_string}
+            try:
+                res = requests.post(api_url, data=json.dumps(data), headers=header)
+            except:
+                raise ThanoSQLConnectionError(
+                    "ThanoSQL Engine is not ready for connection."
+                )
 
-                if res.status_code == 200:
-                    data = res.json()
-                    query_result = data.get("final_result")
-                    if query_result:
-                        res = pd.read_json(query_result, orient="columns")
+            if res.status_code == 200:
+                data = res.json()
+                query_result = data.get("final_result")
+                if query_result:
+                    res = pd.read_json(query_result, orient="columns")
 
-                elif res.status_code == 500:
-                    data = res.json()
-                    reason = data.get("reason")
-                    if reason:
-                        raise ThanoSQLInternalError(reason)
+            elif res.status_code == 500:
+                data = res.json()
+                reason = data.get("reason")
+                if reason:
+                    raise ThanoSQLInternalError(reason)
         return res
 
 
