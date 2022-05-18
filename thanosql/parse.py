@@ -22,15 +22,26 @@ def convert_local_ns(query_string, local_ns) -> str:
 
 
 def is_url(s):
-    p = re.compile(r"^\w*://\w*")
-    m = p.match(s)
-
-    if m:
+    p = re.compile(r"^\s*\w*://\w*")
+    if p.match(s):
         return True
     else:
         return False
 
 
+def is_api_token(s):
+    p = re.compile(r"^\s*API_TOKEN=\w*")
+    if p.match(s):
+        return True
+    else:
+        return False
+
+
+def is_multiple_queries(s):
+    return ";" in s
+
+
+# deprecated.
 def split_string_to_query_list(s: str) -> list:
     """
     Split semi-colon containing string to query list and exclude empty string('').
