@@ -5,16 +5,21 @@ import pandas as pd
 import requests
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 
-from thanosql.exceptions import ThanoSQLConnectionError, ThanoSQLInternalError, ThanoSQLSyntaxError
-from thanosql.parse import convert_local_ns, is_url, is_multiple_queries, is_api_token
+from thanosql.exceptions import (
+    ThanoSQLConnectionError,
+    ThanoSQLInternalError,
+    ThanoSQLSyntaxError,
+)
+from thanosql.parse import convert_local_ns, is_api_token, is_multiple_queries, is_url
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
+
 
 @magics_class
 class ThanosMagic(Magics):
     @needs_local_scope
     @line_cell_magic
-    def thanosql(self, line:str =None, cell:str =None, local_ns={}):
+    def thanosql(self, line: str = None, cell: str = None, local_ns={}):
         if line:
             if is_url(line):
                 # Set API URL
@@ -43,14 +48,12 @@ class ThanosMagic(Magics):
         if not api_token:
             raise ThanoSQLConnectionError(
                 "An API Token is requierd. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
-                )
-        header = {'Authorization': 'Bearer ' + api_token}
+            )
+        header = {"Authorization": "Bearer " + api_token}
 
         query_string = cell
         if is_multiple_queries(query_string):
-            raise ThanoSQLSyntaxError(
-                "Multiple Queries are not supported."
-            )
+            raise ThanoSQLSyntaxError("Multiple Queries are not supported.")
 
         res = None
         if query_string:

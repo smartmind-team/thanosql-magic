@@ -28,6 +28,7 @@ def is_url(s):
     else:
         return False
 
+
 def is_api_token(s):
     p = re.compile(r"^\s*API_TOKEN=\w*")
     if p.match(s):
@@ -35,8 +36,10 @@ def is_api_token(s):
     else:
         return False
 
+
 def is_multiple_queries(s):
-    return ';' in s
+    return ";" in s
+
 
 # deprecated.
 def split_string_to_query_list(s: str) -> list:
