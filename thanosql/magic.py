@@ -27,7 +27,7 @@ class ThanosMagic(Magics):
                 # Set API Token
                 api_token = line.strip().split("API_TOKEN=")[-1]
                 os.environ["API_TOKEN"] = api_token
-                print(f"API Token is set to '{api_token}'")
+                print(f"API Token is set as '{api_token}'")
                 return
 
             # 'line' will treat as same as 'cell'
