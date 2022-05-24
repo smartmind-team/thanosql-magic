@@ -11,6 +11,7 @@ from thanosql.exceptions import (
     ThanoSQLSyntaxError,
 )
 from thanosql.parse import *
+from thanosql.utils import print_audio, print_image, print_video
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
 
@@ -68,23 +69,20 @@ class ThanosMagic(Magics):
                 )
 
             if res.status_code == 200:
-                data = res.json()
-                query_result = data["data"].get("df")
+                data = res.json().get("data")
+                query_result = data.get("df")
                 if query_result:
                     res = pd.read_json(query_result, orient="split")
-                
-                print_type = data["data"].get("print")
-                print_option = data["data"].get("print_option")
+
+                print_type = data.get("print")
+                print_option = data.get("print_option")
                 if print_type:
-                    if print_type=="print_image":
-                        print_image(res, print_option)
-                        return
-                    elif print_type=="print_audio":
-                        audio = print_audio(res, print_option)
-                        return audio
-                    elif print_type=="print_video":
-                        video = print_video(res, print_option)
-                        return video
+                    if print_type == "print_image":
+                        return print_image(res, print_option)
+                    elif print_type == "print_audio":
+                        return print_audio(res, print_option)
+                    elif print_type == "print_video":
+                        return print_video(res, print_option)
 
             elif res.status_code == 500:
                 data = res.json()
