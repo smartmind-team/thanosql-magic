@@ -35,6 +35,8 @@ setup(
         "ipython",
         "requests",
         "pandas",
+        "matplotlib",
+        "ipywidgets",
     ],
     include_package_data=True,
     zip_safe=False,
