@@ -6,7 +6,7 @@ import requests
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 
 from thanosql.exceptions import ThanoSQLConnectionError, ThanoSQLInternalError
-from thanosql.parse import convert_local_ns, is_url, split_string_to_query_list
+from thanosql.parse import *
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
 
@@ -50,13 +50,27 @@ class ThanosMagic(Magics):
 
                 if res.status_code == 200:
                     data = res.json()
-                    query_result = data.get("final_result")
+
+                    query_result = data["data"].get("df")
                     if query_result:
                         res = pd.read_json(query_result, orient="columns")
+                    
+                    print_type = data["data"].get("print")
+                    print_option = data["data"].get("print_option")
+                    if print_type:
+                        if print_type=="print_image":
+                            print_image(res, print_option)
+                            return
+                        elif print_type=="print_audio":
+                            audio = print_audio(res, print_option)
+                            return audio
+                        elif print_type=="print_video":
+                            video = print_video(res, print_option)
+                            return video
 
                 elif res.status_code == 500:
                     data = res.json()
-                    reason = data.get("reason")
+                    reason = data.get("message")
                     if reason:
                         raise ThanoSQLInternalError(reason)
         return res
