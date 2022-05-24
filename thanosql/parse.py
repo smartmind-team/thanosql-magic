@@ -51,13 +51,26 @@ def print_video(df, print_option):
     return video
  
 def is_url(s):
-    p = re.compile(r"^\w*://\w*")
-    m = p.match(s)
-    if m:
+    p = re.compile(r"^\s*\w*://\w*")
+    if p.match(s):
         return True
     else:
         return False
 
+
+def is_api_token(s):
+    p = re.compile(r"^\s*API_TOKEN=\w*")
+    if p.match(s):
+        return True
+    else:
+        return False
+
+
+def is_multiple_queries(s):
+    return ";" in s
+
+
+# deprecated.
 def split_string_to_query_list(s: str) -> list:
     """
     Split semi-colon containing string to query list and exclude empty string('').
