@@ -70,7 +70,6 @@ class ThanosMagic(Magics):
             if res.status_code == 200:
                 data = res.json()
                 query_result = data["data"].get("df")
-                print(query_result)
                 if query_result:
                     res = pd.read_json(query_result, orient="split")
                 
