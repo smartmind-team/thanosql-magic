@@ -66,12 +66,12 @@ class ThanosMagic(Magics):
             try:
                 spinner.start()
                 res = requests.post(api_url, data=json.dumps(data), headers=header)
-                spinner.stop()
             except:
-                spinner.stop()
                 raise ThanoSQLConnectionError(
                     "ThanoSQL Engine is not ready for connection."
                 )
+            finally:
+                spinner.stop()
 
             if res.status_code == 200:
                 data = res.json().get("data")
