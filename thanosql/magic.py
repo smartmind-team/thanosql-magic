@@ -61,16 +61,12 @@ class ThanosMagic(Magics):
         res = None
         if query_string:
             query_string = convert_local_ns(query_string, local_ns)
-            check_time = query_string.lower().startswith(("build", "fit"))
 
             data = {"query_string": query_string}
             try:
-                if check_time:
-                    spinner.start()
-                    res = requests.post(api_url, data=json.dumps(data), headers=header)
-                    spinner.stop()
-                else:
-                    res = requests.post(api_url, data=json.dumps(data), headers=header)
+                spinner.start()
+                res = requests.post(api_url, data=json.dumps(data), headers=header)
+                spinner.stop()
             except:
                 spinner.stop()
                 raise ThanoSQLConnectionError(
