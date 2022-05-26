@@ -11,9 +11,11 @@ from thanosql.exceptions import (
     ThanoSQLSyntaxError,
 )
 from thanosql.parse import *
+from thanosql.spinner import Spinner
 from thanosql.utils import print_audio, print_image, print_video
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
+spinner = Spinner()
 
 
 @magics_class
@@ -62,8 +64,11 @@ class ThanosMagic(Magics):
 
             data = {"query_string": query_string}
             try:
+                spinner.start()
                 res = requests.post(api_url, data=json.dumps(data), headers=header)
+                spinner.stop()
             except:
+                spinner.stop()
                 raise ThanoSQLConnectionError(
                     "ThanoSQL Engine is not ready for connection."
                 )
