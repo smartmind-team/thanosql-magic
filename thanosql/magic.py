@@ -88,13 +88,15 @@ class ThanosMagic(Magics):
                         return print_audio(res, print_option)
                     elif print_type == "print_video":
                         return print_video(res, print_option)
+                print("Success")
+                return res
 
             elif res.status_code == 500:
                 data = res.json()
                 reason = data.get("message")
                 if reason:
                     raise ThanoSQLInternalError(reason)
-        return res
+        return
 
 
 # In order to actually use these magics, you must register them with a
