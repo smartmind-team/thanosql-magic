@@ -22,7 +22,7 @@ spinner = Spinner()
 class ThanosMagic(Magics):
     @needs_local_scope
     @line_cell_magic
-    def thanosql(self, line: str = None, cell: str = None, local_ns={}):  # noqa
+    def thanosql(self, line: str = None, cell: str = None, local_ns={}):
         if line:
             if is_url(line):
                 # Set API URL
