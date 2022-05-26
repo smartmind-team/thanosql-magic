@@ -72,7 +72,7 @@ class ThanosMagic(Magics):
                 data = res.json().get("data")
                 query_result = data.get("df")
                 if query_result:
-                    return pd.read_json(query_result, orient="split")
+                    res = pd.read_json(query_result, orient="split")
 
                 print_type = data.get("print")
                 print_option = data.get("print_option")
@@ -84,7 +84,7 @@ class ThanosMagic(Magics):
                     elif print_type == "print_video":
                         return print_video(res, print_option)
                 print("Success")
-                return
+                return res
 
             elif res.status_code == 500:
                 data = res.json()
