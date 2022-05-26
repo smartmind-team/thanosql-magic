@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from ipywidgets import Audio, Video
+from IPython.display import Audio, Video, display
 from matplotlib.pyplot import imread
 
 
@@ -22,13 +22,23 @@ def print_image(df, print_option):
 
 def print_audio(df, print_option):
     column = df.columns[0]
-    audio_file = df[column][0]
-    audio = Audio.from_file(audio_file)
-    return audio
+    audio_file_list = list(df[column])
+
+    ### display 5 videos max
+    limit = 5
+    for audio in audio_file_list[:limit]:
+        print(audio)
+        display(Audio(audio))
+    return
 
 
 def print_video(df, print_option):
     column = df.columns[0]
-    video_file = df[column][0]
-    video = Video.from_file(video_file)
-    return video
+    video_file_list = list(df[column])
+
+    ### display 5 videos max
+    limit = 5
+    for video in video_file_list[:limit]:
+        print(video)
+        display(Video(video))
+    return
