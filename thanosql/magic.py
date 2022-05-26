@@ -77,19 +77,21 @@ class ThanosMagic(Magics):
                 data = res.json().get("data")
                 query_result = data.get("df")
                 if query_result:
-                    res = pd.read_json(query_result, orient="split")
+                    result = pd.read_json(query_result, orient="split")
 
-                print_type = data.get("print")
-                print_option = data.get("print_option")
-                if print_type:
-                    if print_type == "print_image":
-                        return print_image(res, print_option)
-                    elif print_type == "print_audio":
-                        return print_audio(res, print_option)
-                    elif print_type == "print_video":
-                        return print_video(res, print_option)
+                    print_type = data.get("print")
+                    print_option = data.get("print_option")
+                    if print_type:
+                        if print_type == "print_image":
+                            return print_image(result, print_option)
+                        elif print_type == "print_audio":
+                            return print_audio(result, print_option)
+                        elif print_type == "print_video":
+                            return print_video(result, print_option)
+                    return result
+
                 print("Success")
-                return res
+                return
 
             elif res.status_code == 500:
                 data = res.json()
