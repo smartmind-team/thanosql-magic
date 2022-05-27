@@ -14,7 +14,7 @@ from thanosql.parse import *
 from thanosql.spinner import Spinner
 from thanosql.utils import print_audio, print_image, print_video
 
-DEFAULT_API_URL = "http://localhost:8000/api/v1/query"
+DEFAULT_API_URL = "https://engine.thanosql.ai/api/v1/query"
 spinner = Spinner()
 
 
