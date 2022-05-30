@@ -13,7 +13,9 @@ def print_image(df, print_option):
     num_cols = 5
     num_rows = 5
     df = df[: num_cols * num_rows]
+    base_dir = print_option["base_dir"]
     for idx, img_path in enumerate(df[column_name]):
+        img_path = f"{base_dir}/{img_path}"
         image = imread(img_path)
         fig.add_subplot(num_rows, num_cols, idx + 1)
         plt.axis("off")
@@ -29,9 +31,11 @@ def print_audio(df, print_option):
 
     ### display 5 videos max
     limit = 5
-    for audio in audio_file_list[:limit]:
-        print(audio)
-        display(Audio(audio))
+    base_dir = print_option["base_dir"]
+    for aud_path in audio_file_list[:limit]:
+        aud_path = f"{base_dir}/{aud_path}"
+        print(aud_path)
+        display(Audio(aud_path))
     return
 
 
@@ -41,7 +45,9 @@ def print_video(df, print_option):
 
     ### display 5 videos max
     limit = 5
-    for video in video_file_list[:limit]:
-        print(video)
-        display(Video(video, embed=True))
+    base_dir = print_option["base_dir"]
+    for vid_path in video_file_list[:limit]:
+        vid_path = f"{base_dir}/{vid_path}"
+        print(vid_path)
+        display(Video(vid_path, embed=True))
     return
