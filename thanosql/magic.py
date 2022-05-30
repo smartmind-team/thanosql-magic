@@ -97,8 +97,7 @@ class ThanosMagic(Magics):
                 raise ThanoSQLConnectionError(res.json().get("detail"))
 
             elif res.status_code == 500:
-                data = res.json()
-                reason = data.get("message")
+                reason = res.json().get("message")
                 if reason:
                     raise ThanoSQLInternalError(reason)
 
