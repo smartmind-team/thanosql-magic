@@ -80,7 +80,7 @@ class ThanosMagic(Magics):
                     result = pd.read_json(query_result, orient="split")
 
                     print_type = data.get("print")
-                    print_option = data.get("print_option")
+                    print_option = data.get("print_option", {})
                     if print_type:
                         if print_type == "print_image":
                             return print_image(result, print_option)
