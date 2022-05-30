@@ -58,10 +58,6 @@ class ThanosMagic(Magics):
         if is_multiple_queries(query_string):
             raise ThanoSQLSyntaxError("Multiple Queries are not supported.")
 
-        print(os.environ)
-        import time
-
-        time.sleep(100)
         res = None
         if query_string:
             query_string = convert_local_ns(query_string, local_ns)
