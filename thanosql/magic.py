@@ -93,11 +93,20 @@ class ThanosMagic(Magics):
                 print("Success")
                 return
 
+            elif res.status_code == 401:
+                raise ThanoSQLConnectionError(res.json().get("detail"))
+
             elif res.status_code == 500:
                 data = res.json()
                 reason = data.get("message")
                 if reason:
                     raise ThanoSQLInternalError(reason)
+
+            elif res.status_code == 504:
+                raise ThanoSQLConnectionError("timeout error")
+
+            else:
+                raise ThanoSQLInternalError(res.text)
         return
 
 
