@@ -81,13 +81,14 @@ class ThanosMagic(Magics):
 
                     print_type = data.get("print")
                     print_option = data.get("print_option", {})
+                    print_base_dir = data.get("base_dir", "")
                     if print_type:
                         if print_type == "print_image":
-                            return print_image(result, print_option)
+                            return print_image(result, print_option, print_base_dir)
                         elif print_type == "print_audio":
-                            return print_audio(result, print_option)
+                            return print_audio(result, print_option, print_base_dir)
                         elif print_type == "print_video":
-                            return print_video(result, print_option)
+                            return print_video(result, print_option, print_base_dir)
                     return result
 
                 print("Success")
