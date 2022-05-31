@@ -31,3 +31,4 @@ class Spinner:
     def stop(self):
         self.busy = False
         time.sleep(self.delay)
+        clear_output()
