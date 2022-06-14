@@ -19,7 +19,6 @@ def print_image(df, print_option):
         image = imread(image_full_path)
         fig.add_subplot(num_rows, num_cols, idx + 1)
         plt.axis("off")
-        plt.title(image_full_path, fontdict={"fontsize": 50 / num_cols})
         plt.imshow(image)
     plt.show()
     return
