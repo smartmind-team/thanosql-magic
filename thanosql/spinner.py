@@ -21,6 +21,8 @@ class Spinner:
     def spinner_task(self):
         while self.busy:
             print("[+] Running...", next(self.spinner_generator))
+            print(datetime.now().strftime("%m/%d/%Y %H:%M:%S"), end="", flush=True)
+            print("\r", end="", flush=True)
             clear_output(wait=True)
             time.sleep(self.delay)
 
