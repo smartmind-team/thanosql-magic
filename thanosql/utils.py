@@ -1,27 +1,17 @@
-import matplotlib.pyplot as plt
-from IPython.display import Audio, Video, display
-from matplotlib.pyplot import imread
+from IPython.display import Image, Audio, Video, display
 
 
 def print_image(df, print_option):
-    w = 40
-    h = 40
-    fig = plt.figure(figsize=(w, h))
-
     column_name = df.columns[0]
+    image_file_list = list(df[column_name])
 
-    num_cols = 5
-    num_rows = 5
-    df = df[: num_cols * num_rows]
+    ### display 10 iamges
+    limit = 10
     base_dir = print_option.get("base_dir", "")
-    for idx, image_path in enumerate(df[column_name]):
-        image_full_path = f"{base_dir}/{image_path}"
-        image = imread(image_full_path)
-        fig.add_subplot(num_rows, num_cols, idx + 1)
-        plt.axis("off")
-        plt.title(image_full_path, fontdict={"fontsize": 50 / num_cols})
-        plt.imshow(image)
-    plt.show()
+    for image_path in image_file_list[:limit]:
+        iamge_full_path = f"{base_dir}/{image_path}"
+        print(iamge_full_path)
+        display(Image(iamge_full_path, width=240, height=240))
     return
 
 
@@ -29,7 +19,7 @@ def print_audio(df, print_option):
     column_name = df.columns[0]
     audio_file_list = list(df[column_name])
 
-    ### display 5 videos max
+    ### display 5 audios
     limit = 5
     base_dir = print_option.get("base_dir", "")
     for audio_path in audio_file_list[:limit]:
@@ -43,7 +33,7 @@ def print_video(df, print_option):
     column_name = df.columns[0]
     video_file_list = list(df[column_name])
 
-    ### display 5 videos max
+    ### display 5 videos
     limit = 5
     base_dir = print_option.get("base_dir", "")
     for video_path in video_file_list[:limit]:
