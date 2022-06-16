@@ -11,11 +11,11 @@ class Spinner:
         while 1:
             yield from "|/-\\"
 
-    def __init__(self, busy=False, delay=0.1):
+    def __init__(self):
+        self.busy = False
+        self.delay = 0.1
+        
         self.spinner_generator = self.spinning_cursor()
-        self.busy = busy
-        if delay and float(delay):
-            self.delay = delay
         self.start_time = None
 
     def spinner_task(self):
@@ -34,4 +34,4 @@ class Spinner:
         self.busy = False
         time.sleep(self.delay)
         clear_output()
-        print("Time Taken:", "{0:.2f}".format((datetime.now()-self.start_time).total_seconds()), "seconds") #print collapsed time
+        print("Time Taken:", "{0:.2f}".format((datetime.now()-self.start_time).total_seconds()), "seconds")
