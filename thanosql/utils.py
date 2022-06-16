@@ -2,7 +2,7 @@ from IPython.display import Image, Audio, Video, display
 
 
 def print_image(df, print_option):
-    column_name = df.columns[0]
+    column_name = print_option.get("image_column", "image_path")
     image_file_list = list(df[column_name])
 
     ### display 10 iamges
@@ -16,7 +16,7 @@ def print_image(df, print_option):
 
 
 def print_audio(df, print_option):
-    column_name = df.columns[0]
+    column_name = print_option.get("audio_column", "audio_path")
     audio_file_list = list(df[column_name])
 
     ### display 5 audios
@@ -30,7 +30,7 @@ def print_audio(df, print_option):
 
 
 def print_video(df, print_option):
-    column_name = df.columns[0]
+    column_name = print_option.get("video_column", "video_path")
     video_file_list = list(df[column_name])
 
     ### display 5 videos
