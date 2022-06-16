@@ -1,6 +1,6 @@
 import threading
 import time
-
+from datetime import datetime 
 from IPython.display import clear_output
 
 
@@ -19,9 +19,10 @@ class Spinner:
             self.delay = delay
 
     def spinner_task(self):
+        start_time = datetime.now()
         while self.busy:
             print("[+] Running...", next(self.spinner_generator))
-            print(datetime.now().strftime("%m/%d/%Y %H:%M:%S"), end="", flush=True)
+            print("[+] Time Taken...", "{0:.6f}".format((datetime.now()-start_time).total_seconds()), "seconds", end="", flush=True)
             print("\r", end="", flush=True)
             clear_output(wait=True)
             time.sleep(self.delay)
