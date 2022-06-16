@@ -34,4 +34,4 @@ class Spinner:
         self.busy = False
         time.sleep(self.delay)
         clear_output()
-        print("Time Taken :", "{0:.2f}".format((datetime.now()-self.start_time).total_seconds()), "seconds") #print collapsed time
+        print("Time Taken:", "{0:.2f}".format((datetime.now()-self.start_time).total_seconds()), "seconds") #print collapsed time
