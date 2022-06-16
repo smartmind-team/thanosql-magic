@@ -14,14 +14,18 @@ class Spinner:
     def __init__(self):
         self.busy = False
         self.delay = 0.1
-        
+
         self.spinner_generator = self.spinning_cursor()
         self.start_time = None
 
     def spinner_task(self):
         while self.busy:
             print("[+] Running...", next(self.spinner_generator))
-            print("[+] Collapsed Time...", "{0:.2f}".format((datetime.now()-self.start_time).total_seconds()), "seconds")
+            print(
+                "[+] Collapsed Time...",
+                f"{(datetime.now()-self.start_time).total_seconds():.2f}",
+                "seconds",
+            )
             clear_output(wait=True)
             time.sleep(self.delay)
 
@@ -34,4 +38,8 @@ class Spinner:
         self.busy = False
         time.sleep(self.delay)
         clear_output()
-        print("Time Taken:", "{0:.2f}".format((datetime.now()-self.start_time).total_seconds()), "seconds")
+        print(
+            "Time Taken:",
+            f"{(datetime.now()-self.start_time).total_seconds():.2f}",
+            "seconds",
+        )

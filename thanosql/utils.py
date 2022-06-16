@@ -1,4 +1,4 @@
-from IPython.display import Image, Audio, Video, display
+from IPython.display import Audio, Image, Video, display
 
 
 def print_image(df, print_option):
