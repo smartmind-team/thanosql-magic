@@ -35,6 +35,7 @@ setup(
         "ipython",
         "requests",
         "pandas",
+        "websocket-client"
     ],
     include_package_data=True,
     zip_safe=False,
