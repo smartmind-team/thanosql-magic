@@ -3,6 +3,7 @@ import os
 
 import pandas as pd
 import requests
+import websocket
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 
 from thanosql.exceptions import (
@@ -13,9 +14,8 @@ from thanosql.exceptions import (
 from thanosql.parse import *
 from thanosql.spinner import Spinner
 from thanosql.utils import print_audio, print_image, print_video
-import websocket
 
-DEFAULT_API_URL = "https://engine.thanosql.ai/api/v1/query"
+DEFAULT_API_URL = "https://engine.thanosql.ai/ws/v1/query"
 spinner = Spinner()
 
 
@@ -64,80 +64,71 @@ class ThanosMagic(Magics):
             query_string = convert_local_ns(query_string, local_ns)
 
             data = {"query_string": query_string}
-            # try:
-            #     spinner.start()
-            #     res = requests.post(api_url, data=json.dumps(data), headers=header)
-            # except:
-            #     raise ThanoSQLConnectionError(
-            #         "ThanoSQL Engine is not ready for connection."
-            #     )
-            # finally:
-            #     spinner.stop()
 
-            # if res.status_code == 200:
-            #     data = res.json().get("data")
-            #     query_result = data.get("df")
-            #     if query_result:
-            #         result = pd.read_json(query_result, orient="split")
-
-            #         print_type = data.get("print")
-            #         print_option = data.get("print_option", {})
-            #         if print_type:
-            #             if print_type == "print_image":
-            #                 return print_image(result, print_option)
-            #             elif print_type == "print_audio":
-            #                 return print_audio(result, print_option)
-            #             elif print_type == "print_video":
-            #                 return print_video(result, print_option)
-            #         return result
-
-            #     print("Success")
-            #     return
-
-            # elif res.status_code == 401:
-            #     raise ThanoSQLConnectionError(res.json().get("detail"))
-
-            # elif res.status_code == 500:
-            #     reason = res.json().get("message")
-            #     if reason:
-            #         raise ThanoSQLInternalError(reason)
-
-            # elif res.status_code == 504:
-            #     raise ThanoSQLConnectionError("timeout error")
-
-            # else:
-            #     raise ThanoSQLInternalError(res.text)
-            
             try:
                 # spinner.start()
                 ws = websocket.WebSocket()
-                ws.connect(f"ws://engine:8000/api/v1/query/ws?token={api_token}")
+                ws.connect(f"ws://engine:8000/ws/v1/query?token={api_token}")
                 ws.send(query_string)
             except:
-            # print("connection closed")
-                ws.close()
+                # print("connection closed")
                 raise ThanoSQLConnectionError("Could not connect to the Websocket")
+                ws.close()
             connection_open = True
-            while connection_open:
-                connection_open = output_handler(ws)
+            try:
+                while connection_open:
+                    # connection_open = output_handler(ws)
+                    output = ws.recv()
+                    try:
+                        output_dict = json.loads(output)
+                    except:
+                        output_dict = {
+                            "output_type": "MESSAGE",
+                            "output_message": output,
+                        }
+                    if output_dict["output_type"] == "ERROR":
+                        raise ThanoSQLInternalError(output_dict["output_message"])
+                    elif output_dict["output_type"] == "CONNECTION_CLOSE":
+                        break
+                    elif output_dict["output_type"] == "PING":
+                        continue
+                    elif output_dict["output_type"] == "RESULT":
+                        query_result = output_dict["output_message"].get("df")
+                        if query_result:
+                            result = pd.read_json(query_result, orient="split")
+                            return result
+                    else:
+                        print(output_dict["output_message"])
+            except KeyboardInterrupt:
+                ws.close()
+                raise Exception("KEYBOARD INTERRUPTION, TASK KILLED")
+
         return
+
 
 def output_handler(ws):
     output = ws.recv()
     try:
         output_dict = json.loads(output)
     except:
-        output_dict = {'output_type' : "MESSAGE", 'output_message' : output}
-    if output_dict['output_type'] == "ERROR":
-        raise ThanoSQLInternalError(output_dict['output_message'])
-    elif output_dict['output_type'] == "CONNECTION_CLOSE":
-        print(output_dict["output_message"])
+        output_dict = {"output_type": "MESSAGE", "output_message": output}
+    if output_dict["output_type"] == "ERROR":
+        raise ThanoSQLInternalError(output_dict["output_message"])
+    elif output_dict["output_type"] == "CONNECTION_CLOSE":
         ws.close()
         return False
+    elif output_dict["output_type"] == "RESULT":
+        query_result = output_dict["output_message"].get("df")
+        if query_result:
+            result = pd.read_json(query_result, orient="split")
     else:
         print(output_dict["output_message"])
+        print(type(output_dict["output_message"]))
         return True
 
+        #     query_result = data.get("df")
+        #     if query_result:
+        #         result = pd.read_json(query_result, orient="split")
 
 
 # In order to actually use these magics, you must register them with a
