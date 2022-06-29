@@ -96,7 +96,18 @@ class ThanosMagic(Magics):
                         query_result = output_dict["output_message"].get("df")
                         if query_result:
                             result = pd.read_json(query_result, orient="split")
+
+                            print_type = data.get("print")
+                            print_option = data.get("print_option", {})
+                            if print_type:
+                                if print_type == "print_image":
+                                    return print_image(result, print_option)
+                                elif print_type == "print_audio":
+                                    return print_audio(result, print_option)
+                                elif print_type == "print_video":
+                                    return print_video(result, print_option)
                             return result
+                        return "success"
                     else:
                         print(output_dict["output_message"])
             except KeyboardInterrupt:
@@ -104,32 +115,7 @@ class ThanosMagic(Magics):
                 raise Exception("KEYBOARD INTERRUPTION, TASK KILLED")
 
         return
-
-
-def output_handler(ws):
-    output = ws.recv()
-    try:
-        output_dict = json.loads(output)
-    except:
-        output_dict = {"output_type": "MESSAGE", "output_message": output}
-    if output_dict["output_type"] == "ERROR":
-        raise ThanoSQLInternalError(output_dict["output_message"])
-    elif output_dict["output_type"] == "CONNECTION_CLOSE":
-        ws.close()
-        return False
-    elif output_dict["output_type"] == "RESULT":
-        query_result = output_dict["output_message"].get("df")
-        if query_result:
-            result = pd.read_json(query_result, orient="split")
-    else:
-        print(output_dict["output_message"])
-        print(type(output_dict["output_message"]))
-        return True
-
-        #     query_result = data.get("df")
-        #     if query_result:
-        #         result = pd.read_json(query_result, orient="split")
-
+        
 
 # In order to actually use these magics, you must register them with a
 # running IPython.
