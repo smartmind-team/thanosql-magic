@@ -66,18 +66,15 @@ class ThanosMagic(Magics):
             data = {"query_string": query_string}
 
             try:
-                # spinner.start()
                 ws = websocket.WebSocket()
-                ws.connect(f"ws://engine:8000/ws/v1/query?token={api_token}")
+                ws.connect(f"ws://engine:8000/ws/v1/query?api_token={api_token}")
                 ws.send(query_string)
             except:
-                # print("connection closed")
                 raise ThanoSQLConnectionError("Could not connect to the Websocket")
                 ws.close()
             connection_open = True
             try:
                 while connection_open:
-                    # connection_open = output_handler(ws)
                     output = ws.recv()
                     try:
                         output_dict = json.loads(output)
@@ -93,12 +90,12 @@ class ThanosMagic(Magics):
                     elif output_dict["output_type"] == "PING":
                         continue
                     elif output_dict["output_type"] == "RESULT":
-                        query_result = output_dict["output_message"].get("df")
+                        query_result = output_dict["output_message"]["data"].get("df")
                         if query_result:
                             result = pd.read_json(query_result, orient="split")
 
-                            print_type = data.get("print")
-                            print_option = data.get("print_option", {})
+                            print_type = output_dict["output_message"]["data"].get("print")
+                            print_option = output_dict["output_message"]["data"].get("print_option", {})
                             if print_type:
                                 if print_type == "print_image":
                                     return print_image(result, print_option)
