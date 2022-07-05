@@ -13,10 +13,9 @@ from thanosql.exceptions import (
 )
 from thanosql.parse import *
 from thanosql.spinner import Spinner
-from thanosql.utils import print_audio, print_image, print_video
+from thanosql.utils import format_result
 
-DEFAULT_API_URL = "https://engine.thanosql.ai/ws/v1/query"
-spinner = Spinner()
+DEFAULT_API_URL = "ws://engine.thanosql.ai/ws/v1/query"
 
 
 @magics_class
@@ -39,7 +38,7 @@ class ThanosMagic(Magics):
                 print(f"API Token is set as '{api_token}'")
                 return
 
-            # 'line' will treat as same as 'cell'
+            # 'line' will be treated the same as 'cell'
             else:
                 cell = line
 
@@ -53,13 +52,11 @@ class ThanosMagic(Magics):
             raise ThanoSQLConnectionError(
                 "An API Token is requierd. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
             )
-        header = {"Authorization": "Bearer " + api_token}
 
         query_string = cell
         if is_multiple_queries(query_string):
             raise ThanoSQLSyntaxError("Multiple Queries are not supported.")
 
-        res = None
         if query_string:
             query_string = convert_local_ns(query_string, local_ns)
 
@@ -67,22 +64,18 @@ class ThanosMagic(Magics):
 
             try:
                 ws = websocket.WebSocket()
-                ws.connect(f"ws://engine:8000/ws/v1/query?api_token={api_token}")
+                ws.connect(f"{api_url}?api_token={api_token}")
+
                 ws.send(query_string)
             except:
                 raise ThanoSQLConnectionError("Could not connect to the Websocket")
                 ws.close()
+
             connection_open = True
             try:
                 while connection_open:
                     output = ws.recv()
-                    try:
-                        output_dict = json.loads(output)
-                    except:
-                        output_dict = {
-                            "output_type": "MESSAGE",
-                            "output_message": output,
-                        }
+                    output_dict = json.loads(output)
                     if output_dict["output_type"] == "ERROR":
                         raise ThanoSQLInternalError(output_dict["output_message"])
                     elif output_dict["output_type"] == "CONNECTION_CLOSE":
@@ -90,21 +83,7 @@ class ThanosMagic(Magics):
                     elif output_dict["output_type"] == "PING":
                         continue
                     elif output_dict["output_type"] == "RESULT":
-                        query_result = output_dict["output_message"]["data"].get("df")
-                        if query_result:
-                            result = pd.read_json(query_result, orient="split")
-
-                            print_type = output_dict["output_message"]["data"].get("print")
-                            print_option = output_dict["output_message"]["data"].get("print_option", {})
-                            if print_type:
-                                if print_type == "print_image":
-                                    return print_image(result, print_option)
-                                elif print_type == "print_audio":
-                                    return print_audio(result, print_option)
-                                elif print_type == "print_video":
-                                    return print_video(result, print_option)
-                            return result
-                        return "success"
+                        return format_result(output_dict)
                     else:
                         print(output_dict["output_message"])
             except KeyboardInterrupt:
@@ -112,7 +91,7 @@ class ThanosMagic(Magics):
                 raise Exception("KEYBOARD INTERRUPTION, TASK KILLED")
 
         return
-        
+
 
 # In order to actually use these magics, you must register them with a
 # running IPython.
