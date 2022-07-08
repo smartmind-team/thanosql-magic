@@ -1,4 +1,7 @@
+import pandas as pd
 from IPython.display import Audio, Image, Video, display
+
+from thanosql.exceptions import ThanoSQLInternalError
 
 
 def print_image(df, print_option):
@@ -40,4 +43,27 @@ def print_video(df, print_option):
         video_full_path = f"{base_dir}/{video_path}"
         print(video_full_path)
         display(Video(video_full_path, embed=True))
+    return
+
+
+def format_result(output_dict: dict):
+    query_result = output_dict["output_message"]["data"].get("df")
+    if query_result:
+        result = pd.read_json(query_result, orient="split")
+        print_type = output_dict["output_message"]["data"].get("print")
+
+        if print_type:
+            print_option = output_dict["output_message"]["data"].get("print_option", {})
+
+            if print_type == "print_image":
+                return print_image(result, print_option)
+            elif print_type == "print_audio":
+                return print_audio(result, print_option)
+            elif print_type == "print_video":
+                return print_video(result, print_option)
+            else:
+                raise ThanoSQLInternalError("Error: Wrong print_type.")
+        return result
+
+    print("Success")
     return

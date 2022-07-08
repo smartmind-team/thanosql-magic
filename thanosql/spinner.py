@@ -39,7 +39,7 @@ class Spinner:
         time.sleep(self.delay)
         clear_output()
         print(
-            "Time Taken:",
+            "Execution Time:",
             f"{(datetime.now()-self.start_time).total_seconds():.2f}",
             "seconds",
         )
