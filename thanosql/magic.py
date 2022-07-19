@@ -20,6 +20,8 @@ DEFAULT_API_URL = "ws://engine.thanosql.ai/ws/v1/query"
 
 @magics_class
 class ThanosMagic(Magics):
+    api_token = ""
+
     @needs_local_scope
     @line_cell_magic
     def thanosql(self, line: str = None, cell: str = None, local_ns={}):
@@ -33,9 +35,9 @@ class ThanosMagic(Magics):
 
             elif is_api_token(line):
                 # Set API Token
-                api_token = line.strip().split("API_TOKEN=")[-1]
-                os.environ["API_TOKEN"] = api_token
-                print(f"API Token is set as '{api_token}'")
+                self.api_token = line.strip().split("API_TOKEN=")[-1]
+                os.environ["API_TOKEN"] = self.api_token
+                print(f"API Token is set as '{self.api_token}'")
                 return
 
             # 'line' will be treated the same as 'cell'
@@ -46,9 +48,9 @@ class ThanosMagic(Magics):
             return
 
         api_url = os.getenv("API_URL", DEFAULT_API_URL)
-        api_token = os.getenv("API_TOKEN", None)
+        self.api_token = os.getenv("API_TOKEN", None)
 
-        if not api_token:
+        if not self.api_token:
             raise ThanoSQLConnectionError(
                 "An API Token is requierd. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
             )
@@ -59,14 +61,61 @@ class ThanosMagic(Magics):
 
         if query_string:
             query_string = convert_local_ns(query_string, local_ns)
-
-            data = {"query_string": query_string}
+            data = {"query_string": query_string, "query_type": "thanosql"}
 
             try:
                 ws = websocket.WebSocket()
-                ws.connect(f"{api_url}?api_token={api_token}")
+                ws.connect(f"{api_url}?api_token={self.api_token}")
+                ws.send(json.dumps(data))
+            except:
+                raise ThanoSQLConnectionError("Could not connect to the Websocket")
+                ws.close()
 
-                ws.send(query_string)
+            connection_open = True
+            try:
+                while connection_open:
+                    output = ws.recv()
+                    output_dict = json.loads(output)
+                    print(output_dict)
+
+                    if output_dict["output_type"] == "ERROR":
+                        raise ThanoSQLInternalError(output_dict["output_message"])
+                    elif output_dict["output_type"] == "CONNECTION_CLOSE":
+                        break
+                    elif output_dict["output_type"] == "PING":
+                        continue
+                    elif output_dict["output_type"] == "RESULT":
+                        return format_result(output_dict)
+                    else:
+                        print(output_dict["output_message"])
+            except KeyboardInterrupt:
+                ws.close()
+                raise Exception("KEYBOARD INTERRUPTION, TASK KILLED")
+        return
+
+    @needs_local_scope
+    @line_cell_magic
+    def psql(self, line: str = None, cell: str = None, local_ns={}):
+        if line:
+            cell = line
+
+        if not cell:
+            return
+        query_string = cell
+
+        data = {"query_string": query_string, "query_type": "psql"}
+
+        api_url = os.getenv("API_URL", DEFAULT_API_URL)
+        self.api_token = os.getenv("API_TOKEN", None)
+
+        if query_string:
+            query_string = convert_local_ns(query_string, local_ns)
+            data = {"query_string": query_string, "query_type": "psql"}
+
+            try:
+                ws = websocket.WebSocket()
+                ws.connect(f"{api_url}?api_token={self.api_token}")
+                ws.send(json.dumps(data))
             except:
                 raise ThanoSQLConnectionError("Could not connect to the Websocket")
                 ws.close()
@@ -89,8 +138,7 @@ class ThanosMagic(Magics):
             except KeyboardInterrupt:
                 ws.close()
                 raise Exception("KEYBOARD INTERRUPTION, TASK KILLED")
-
-        return
+        return    
 
 
 # In order to actually use these magics, you must register them with a
