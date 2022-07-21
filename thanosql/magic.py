@@ -76,7 +76,6 @@ class ThanosMagic(Magics):
                 while connection_open:
                     output = ws.recv()
                     output_dict = json.loads(output)
-                    print(output_dict)
 
                     if output_dict["output_type"] == "ERROR":
                         raise ThanoSQLInternalError(output_dict["output_message"])
@@ -138,7 +137,7 @@ class ThanosMagic(Magics):
             except KeyboardInterrupt:
                 ws.close()
                 raise Exception("KEYBOARD INTERRUPTION, TASK KILLED")
-        return    
+        return
 
 
 # In order to actually use these magics, you must register them with a
