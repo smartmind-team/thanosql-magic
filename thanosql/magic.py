@@ -20,6 +20,8 @@ DEFAULT_API_URL = "ws://engine.thanosql.ai/ws/v1/query"
 
 @magics_class
 class ThanosMagic(Magics):
+    ws = websocket.WebSocket()
+
     @needs_local_scope
     @line_cell_magic
     def thanosql(self, line: str = None, cell: str = None, local_ns={}):
@@ -61,16 +63,15 @@ class ThanosMagic(Magics):
         query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "thanosql"}
 
-        ws = websocket.WebSocket()
         try:
-            ws.connect(f"{api_url}?api_token={api_token}")
+            self.ws.connect(f"{api_url}?api_token={api_token}")
         except:
             raise ThanoSQLConnectionError("Could not connect to the Websocket")
-        ws.send(json.dumps(query_context))
+        self.ws.send(json.dumps(query_context))
 
         try:
             while True:
-                output = ws.recv()
+                output = self.ws.recv()
                 output_dict = json.loads(output)
 
                 if output_dict["output_type"] == "MESSAGE":
@@ -81,7 +82,7 @@ class ThanosMagic(Magics):
                     raise ThanoSQLInternalError(output_dict["output_message"])
 
         except KeyboardInterrupt:
-            ws.close()
+            self.ws.close()
             raise ThanoSQLConnectionError("KeyboardInterrupt")
 
         return
@@ -103,16 +104,15 @@ class ThanosMagic(Magics):
         query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "psql"}
 
-        ws = websocket.WebSocket()
         try:
-            ws.connect(f"{api_url}?api_token={api_token}")
+            self.ws.connect(f"{api_url}?api_token={api_token}")
         except:
             raise ThanoSQLConnectionError("Could not connect to the Websocket")
-        ws.send(json.dumps(query_context))
+        self.ws.send(json.dumps(query_context))
 
         try:
             while True:
-                output = ws.recv()
+                output = self.ws.recv()
                 output_dict = json.loads(output)
 
                 if output_dict["output_type"] == "MESSAGE":
@@ -123,7 +123,7 @@ class ThanosMagic(Magics):
                     raise ThanoSQLInternalError(output_dict["output_message"])
 
         except KeyboardInterrupt:
-            ws.close()
+            self.ws.close()
             raise ThanoSQLConnectionError("KeyboardInterrupt")
 
         return
