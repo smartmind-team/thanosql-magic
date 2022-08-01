@@ -18,6 +18,31 @@ from thanosql.utils import format_result
 DEFAULT_API_URL = "ws://engine.thanosql.ai/ws/v1/query"
 
 
+def request_thanosql_engine(ws, api_url, api_token, query_context):
+    try:
+        ws.connect(f"{api_url}?api_token={api_token}")
+    except:
+        raise ThanoSQLConnectionError("Could not connect to the Websocket")
+
+    ws.send(json.dumps(query_context))
+
+    try:
+        while True:
+            output = ws.recv()
+            output_dict = json.loads(output)
+
+            if output_dict["output_type"] == "MESSAGE":
+                print(output_dict["output_message"])
+            elif output_dict["output_type"] == "RESULT":
+                return format_result(output_dict)
+            elif output_dict["output_type"] == "ERROR":
+                raise ThanoSQLInternalError(output_dict["output_message"])
+
+    except KeyboardInterrupt:
+        ws.close()
+        raise ThanoSQLConnectionError("KeyboardInterrupt")
+
+
 @magics_class
 class ThanosMagic(Magics):
     ws = websocket.WebSocket()
@@ -63,29 +88,7 @@ class ThanosMagic(Magics):
         query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "thanosql"}
 
-        try:
-            self.ws.connect(f"{api_url}?api_token={api_token}")
-        except:
-            raise ThanoSQLConnectionError("Could not connect to the Websocket")
-        self.ws.send(json.dumps(query_context))
-
-        try:
-            while True:
-                output = self.ws.recv()
-                output_dict = json.loads(output)
-
-                if output_dict["output_type"] == "MESSAGE":
-                    print(output_dict["output_message"])
-                elif output_dict["output_type"] == "RESULT":
-                    return format_result(output_dict)
-                elif output_dict["output_type"] == "ERROR":
-                    raise ThanoSQLInternalError(output_dict["output_message"])
-
-        except KeyboardInterrupt:
-            self.ws.close()
-            raise ThanoSQLConnectionError("KeyboardInterrupt")
-
-        return
+        return request_thanosql_engine(self.ws, api_url, api_token, query_context)
 
     @needs_local_scope
     @line_cell_magic
@@ -104,29 +107,7 @@ class ThanosMagic(Magics):
         query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "psql"}
 
-        try:
-            self.ws.connect(f"{api_url}?api_token={api_token}")
-        except:
-            raise ThanoSQLConnectionError("Could not connect to the Websocket")
-        self.ws.send(json.dumps(query_context))
-
-        try:
-            while True:
-                output = self.ws.recv()
-                output_dict = json.loads(output)
-
-                if output_dict["output_type"] == "MESSAGE":
-                    print(output_dict["output_message"])
-                elif output_dict["output_type"] == "RESULT":
-                    return format_result(output_dict)
-                elif output_dict["output_type"] == "ERROR":
-                    raise ThanoSQLInternalError(output_dict["output_message"])
-
-        except KeyboardInterrupt:
-            self.ws.close()
-            raise ThanoSQLConnectionError("KeyboardInterrupt")
-
-        return
+        return request_thanosql_engine(self.ws, api_url, api_token, query_context)
 
 
 # In order to actually use these magics, you must register them with a
