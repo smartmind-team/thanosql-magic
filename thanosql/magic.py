@@ -15,6 +15,8 @@ from thanosql.parse import *
 from thanosql.spinner import Spinner
 from thanosql.utils import format_result
 
+engine_cluster_ip = os.getenv("THANOSQL_ENGINE_SERVICE_HOST", None)
+DEFAULT_API_URL = f"ws://{engine_cluster_ip}/ws/v1/query"
 
 def request_thanosql_engine(ws, api_url, api_token, query_context):
     try:
@@ -70,10 +72,7 @@ class ThanosMagic(Magics):
         if not cell:
             return
 
-        engine_cluster_ip = os.getenv("THANOSQL_ENGINE_SERVICE_HOST", None)
-        default_url = f"ws://{engine_cluster_ip}/ws/v1/query"
-
-        api_url = os.getenv("API_URL", default_url)
+        api_url = os.getenv("API_URL", DEFAULT_API_URL)
         api_token = os.getenv("API_TOKEN", None)
 
         if not api_token:
