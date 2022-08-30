@@ -15,8 +15,8 @@ from thanosql.parse import *
 from thanosql.spinner import Spinner
 from thanosql.utils import format_result
 
-DEFAULT_API_URL = "wss://engine.thanosql.ai/ws/v1/query"
-
+engine_cluster_ip = os.getenv("THANOSQL_ENGINE_SERVICE_HOST")
+DEFAULT_API_URL = f"ws://{engine_cluster_ip}/ws/v1/query"
 
 def request_thanosql_engine(ws, api_url, api_token, query_context):
     try:
