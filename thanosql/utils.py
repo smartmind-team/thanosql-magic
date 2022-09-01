@@ -11,9 +11,9 @@ def print_image(df, print_option):
     base_dir = print_option.get("base_dir", "")
     limit = print_option.get("limit", len(image_file_list))
     for image_path in image_file_list[:limit]:
-        iamge_full_path = f"{base_dir}/{image_path}"
-        print(iamge_full_path)
-        display(Image(iamge_full_path, width=240, height=240))
+        image_full_path = f"{base_dir}/{image_path}"
+        print(image_full_path)
+        display(Image(image_full_path, width=240, height=240))
     return
 
 
