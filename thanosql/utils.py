@@ -9,7 +9,7 @@ def print_image(df, print_option):
     image_file_list = list(df[column_name])
 
     base_dir = print_option.get("base_dir", "")
-    limit = print_option.get("limit", len(image_file_list))
+    limit = print_option.get("limit")
     for image_path in image_file_list[:limit]:
         image_full_path = f"{base_dir}/{image_path}"
         print(image_full_path)
@@ -22,7 +22,7 @@ def print_audio(df, print_option):
     audio_file_list = list(df[column_name])
 
     base_dir = print_option.get("base_dir", "")
-    limit = print_option.get("limit", len(audio_file_list))
+    limit = print_option.get("limit")
     for audio_path in audio_file_list[:limit]:
         audio_full_path = f"{base_dir}/{audio_path}"
         print(audio_full_path)
@@ -35,7 +35,7 @@ def print_video(df, print_option):
     video_file_list = list(df[column_name])
 
     base_dir = print_option.get("base_dir", "")
-    limit = print_option.get("limit", len(video_file_list))
+    limit = print_option.get("limit")
     for video_path in video_file_list[:limit]:
         video_full_path = f"{base_dir}/{video_path}"
         print(video_full_path)
