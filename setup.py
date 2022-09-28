@@ -31,7 +31,7 @@ setup(
     ],
     keywords="smartmind thanosql ipython jupyter",
     packages=find_packages(exclude=["contrib", "docs", "tests"]),
-    install_requires=["ipython", "requests", "pandas", "websocket-client"],
+    install_requires=["ipython", "requests", "pandas", "websocket-client", "zstandard"],
     include_package_data=True,
     zip_safe=False,
 )

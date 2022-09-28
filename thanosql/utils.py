@@ -1,3 +1,6 @@
+import base64
+import io
+
 import pandas as pd
 from IPython.display import Audio, Image, Video, display
 
@@ -46,7 +49,8 @@ def print_video(df, print_option):
 def format_result(output_dict: dict):
     query_result = output_dict["output_message"]["data"].get("df")
     if query_result:
-        result = pd.read_json(query_result, orient="split")
+        decoded = base64.b64decode(query_result)
+        result = pd.read_json(io.BytesIO(decoded), orient="split", compression="zstd")
         print_type = output_dict["output_message"]["data"].get("print")
 
         if print_type:
