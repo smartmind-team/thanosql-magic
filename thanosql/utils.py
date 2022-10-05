@@ -1,7 +1,50 @@
 import pandas as pd
 from IPython.display import Audio, Image, Video, display
+from psycopg2 import connect
 
 from thanosql.exceptions import ThanoSQLInternalError
+import warnings
+
+
+def format_result(output_dict: dict):
+    warnings.simplefilter(action='ignore', category=UserWarning)
+
+    output_message = output_dict["data"]
+    connection_info = output_message["connection_info"]
+    queries = output_message["query"]
+    conn = connect(
+        database=connection_info["database"],
+        # user=connection_info["user"],
+        user="thanosql",
+        # password=connection_info["password"],
+        password="smartmind1!",
+        host=connection_info["host"],
+    )
+    
+    for query in queries:
+        try:
+            query_result = pd.read_sql(query, conn)
+        except:
+            cur = conn.cursor()
+            conn.commit()
+    
+    print_type = output_message.get("print")
+    if print_type:
+        print_option = output_message.get("print_option", {})
+        return print_result(query_result, print_type, print_option)
+
+    return query_result
+
+
+def print_result(query_df, print_type: str, print_option):
+    if print_type == "print_image":
+        return print_image(query_df, print_option)
+    elif print_type == "print_audio":
+        return print_audio(query_df, print_option)
+    elif print_type == "print_video":
+        return print_video(query_df, print_option)
+    else:
+        raise ThanoSQLInternalError("Error: Wrong print_type.")
 
 
 def print_image(df, print_option):
@@ -40,27 +83,4 @@ def print_video(df, print_option):
         video_full_path = f"{base_dir}/{video_path}"
         print(video_full_path)
         display(Video(video_full_path, embed=True))
-    return
-
-
-def format_result(output_dict: dict):
-    query_result = output_dict["output_message"]["data"].get("df")
-    if query_result:
-        result = pd.read_json(query_result, orient="split")
-        print_type = output_dict["output_message"]["data"].get("print")
-
-        if print_type:
-            print_option = output_dict["output_message"]["data"].get("print_option", {})
-
-            if print_type == "print_image":
-                return print_image(result, print_option)
-            elif print_type == "print_audio":
-                return print_audio(result, print_option)
-            elif print_type == "print_video":
-                return print_video(result, print_option)
-            else:
-                raise ThanoSQLInternalError("Error: Wrong print_type.")
-        return result
-
-    print("Success")
     return
