@@ -10,15 +10,16 @@ def format_result(output_dict: dict):
     warnings.simplefilter(action='ignore', category=UserWarning)
 
     output_message = output_dict["data"]
-    connection_info = output_message["connection_info"]
+    if not output_message.get("workspace_conn_info"):
+        print("Success")
+        return 
+    workspace_conn_info = output_message["workspace_conn_info"]
     queries = output_message["query"]
     conn = connect(
-        database=connection_info["database"],
-        # user=connection_info["user"],
-        user="thanosql",
-        # password=connection_info["password"],
-        password="smartmind1!",
-        host=connection_info["host"],
+        database=workspace_conn_info["database"],
+        user=workspace_conn_info["user"],
+        password=workspace_conn_info["password"],
+        host=workspace_conn_info["host"],
     )
     
     for query in queries:
