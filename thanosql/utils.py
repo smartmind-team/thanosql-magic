@@ -3,7 +3,7 @@ from IPython.display import Audio, Image, Video, display
 from psycopg2 import connect
 from sqlalchemy import create_engine
 
-from thanosql.exceptions import ThanoSQLInternalError
+from thanosql.exceptions import ThanoSQLInternalError, ThanoSQLConnectionError
 import warnings
 
 
@@ -22,16 +22,19 @@ def format_result(output_dict: dict):
     host = workspace_conn_info["host"]
     connection_string = f"postgresql://{user}:{password}@/{database}?host={host}"
 
-    engine = create_engine(connection_string)
-    conn = engine.connect()
-    
+    try:
+        engine = create_engine(connection_string)
+    except:
+        raise ThanoSQLConnectionError("Error connecting to workspace database")
+        
     query_result = "Success"
 
-    for query in queries:
-        try:
-            query_result = pd.read_sql_query(query, conn)
-        except:
-            pass
+    with engine.connect() as conn:
+        for query in queries:
+            try:
+                query_result = pd.read_sql_query(query, conn)
+            except:
+                pass
     
     print_type = output_message.get("print")
     if print_type:
