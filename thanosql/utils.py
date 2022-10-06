@@ -26,7 +26,6 @@ def format_result(output_dict: dict):
         try:
             query_result = pd.read_sql(query, conn)
         except:
-            cur = conn.cursor()
             conn.commit()
     
     print_type = output_message.get("print")
