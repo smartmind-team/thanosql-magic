@@ -16,10 +16,12 @@ def format_result(output_dict: dict):
         return 
     workspace_conn_info = output_message["workspace_conn_info"]
     queries = output_message["query"]
-    user = workspace_conn_info["user"]
-    password = workspace_conn_info["password"]
-    database = workspace_conn_info["database"]
-    host = workspace_conn_info["host"]
+    
+    user = workspace_conn_info.get("user")
+    password = workspace_conn_info.get("password")
+    database = workspace_conn_info.get("database")
+    host = workspace_conn_info.get("host")
+
     connection_string = f"postgresql://{user}:{password}@/{database}?host={host}"
 
     try:
