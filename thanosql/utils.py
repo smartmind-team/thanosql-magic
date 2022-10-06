@@ -11,22 +11,22 @@ def format_result(output_dict: dict):
     warnings.simplefilter(action='ignore', category=UserWarning)
 
     output_message = output_dict["data"]
-    print(output_message)
     if not output_message.get("workspace_conn_info"):
         print("Success")
         return 
     workspace_conn_info = output_message["workspace_conn_info"]
     queries = output_message["query"]
-
     user = workspace_conn_info["user"]
     password = workspace_conn_info["password"]
     database = workspace_conn_info["database"]
     host = workspace_conn_info["host"]
-    connection_url = f"postgresql://{user}:{password}@/{database}?host={host}"
+    connection_string = f"postgresql://{user}:{password}@/{database}?host={host}"
 
-    engine = create_engine(connection_url)
+    engine = create_engine(connection_string)
     conn = engine.connect()
     
+    query_result = "Success"
+
     for query in queries:
         try:
             query_result = pd.read_sql_query(query, conn)
