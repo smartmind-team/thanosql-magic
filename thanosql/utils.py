@@ -1,6 +1,7 @@
 import pandas as pd
 from IPython.display import Audio, Image, Video, display
 from psycopg2 import connect
+from sqlalchemy import create_engine
 
 from thanosql.exceptions import ThanoSQLInternalError
 import warnings
@@ -10,23 +11,27 @@ def format_result(output_dict: dict):
     warnings.simplefilter(action='ignore', category=UserWarning)
 
     output_message = output_dict["data"]
+    print(output_message)
     if not output_message.get("workspace_conn_info"):
         print("Success")
         return 
     workspace_conn_info = output_message["workspace_conn_info"]
     queries = output_message["query"]
-    conn = connect(
-        database=workspace_conn_info["database"],
-        user=workspace_conn_info["user"],
-        password=workspace_conn_info["password"],
-        host=workspace_conn_info["host"],
-    )
+
+    user = workspace_conn_info["user"]
+    password = workspace_conn_info["password"]
+    database = workspace_conn_info["database"]
+    host = workspace_conn_info["host"]
+    connection_url = f"postgresql://{user}:{password}@/{database}?host={host}"
+
+    engine = create_engine(connection_url)
+    conn = engine.connect()
     
     for query in queries:
         try:
-            query_result = pd.read_sql(query, conn)
+            query_result = pd.read_sql_query(query, conn)
         except:
-            conn.commit()
+            pass
     
     print_type = output_message.get("print")
     if print_type:
