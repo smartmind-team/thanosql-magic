@@ -14,8 +14,9 @@ def format_result(output_dict: dict):
     if not output_message.get("workspace_conn_info"):
         print("Success")
         return 
-    workspace_conn_info = output_message["workspace_conn_info"]
-    queries = output_message["query"]
+    workspace_conn_info = output_message.get("workspace_conn_info")
+    queries = output_message.get("query")
+    query_type = output_message.get("query_type")
     
     user = workspace_conn_info.get("user")
     password = workspace_conn_info.get("password")
@@ -29,14 +30,23 @@ def format_result(output_dict: dict):
     except:
         raise ThanoSQLConnectionError("Error connecting to workspace database")
         
-    query_result = "Success"
-
     with engine.connect() as conn:
-        for query in queries:
+        if query_type == "MULTI":
+            select_query = queries[0]
+            query_result = pd.read_sql_query(select_query, conn)
+            drop_query = queries[1]
+            conn.execute(drop_query)
+        elif query_type == "SELECT":
+            select_query = queries[0]
+            query_result = pd.read_sql_query(select_query, conn)
+        elif query_type == "NORMAL":
+            normal_query = queries[0]
             try:
-                query_result = pd.read_sql_query(query, conn)
+                query_result = pd.read_sql_query(normal_query, conn)
             except:
-                pass
+                query_result = "Success"
+        else:
+            raise ThanoSQLInternalError("Invalid Query Type")
     
     print_type = output_message.get("print")
     if print_type:
