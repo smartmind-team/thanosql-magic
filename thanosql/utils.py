@@ -15,8 +15,8 @@ def format_result(output_dict: dict):
         print("Success")
         return 
     workspace_conn_info = data.get("workspace_conn_info")
-    queries = data.get("query")
-    query_type = data.get("query_type")
+    queries = data.get("query_list")
+    response_type = data.get("response_type")
     
     user = workspace_conn_info.get("user")
     password = workspace_conn_info.get("password")
@@ -31,29 +31,29 @@ def format_result(output_dict: dict):
         raise ThanoSQLConnectionError("Error connecting to workspace database")
         
     with engine.connect() as conn:
-        if query_type == "MULTI":
+        if response_type == "SELECT_DROP":
             select_query = queries[0]
-            query_result = pd.read_sql_query(select_query, conn)
+            result = pd.read_sql_query(select_query, conn)
             drop_query = queries[1]
             conn.execute(drop_query)
-        elif query_type == "SELECT":
+        elif response_type == "SELECT":
             select_query = queries[0]
-            query_result = pd.read_sql_query(select_query, conn)
-        elif query_type == "NORMAL":
+            result = pd.read_sql_query(select_query, conn)
+        elif response_type == "NORMAL":
             normal_query = queries[0]
             try:
-                query_result = pd.read_sql_query(normal_query, conn)
+                result = pd.read_sql_query(normal_query, conn)
             except:
-                query_result = "Success"
+                result = "Success"
         else:
-            raise ThanoSQLInternalError("Invalid Query Type")
+            raise ThanoSQLInternalError("Invalid Response Type")
     
     print_type = data.get("print")
     if print_type:
         print_option = data.get("print_option", {})
-        return print_result(query_result, print_type, print_option)
+        return print_result(result, print_type, print_option)
 
-    return query_result
+    return result
 
 
 def print_result(query_df, print_type: str, print_option):
