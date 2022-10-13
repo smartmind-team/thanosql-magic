@@ -10,13 +10,13 @@ import warnings
 def format_result(output_dict: dict):
     warnings.simplefilter(action='ignore', category=UserWarning)
 
-    output_message = output_dict["data"]
-    if not output_message.get("workspace_conn_info"):
+    data = output_dict["data"]
+    if not data.get("workspace_conn_info"):
         print("Success")
         return 
-    workspace_conn_info = output_message.get("workspace_conn_info")
-    queries = output_message.get("query")
-    query_type = output_message.get("query_type")
+    workspace_conn_info = data.get("workspace_conn_info")
+    queries = data.get("query")
+    query_type = data.get("query_type")
     
     user = workspace_conn_info.get("user")
     password = workspace_conn_info.get("password")
@@ -48,9 +48,9 @@ def format_result(output_dict: dict):
         else:
             raise ThanoSQLInternalError("Invalid Query Type")
     
-    print_type = output_message.get("print")
+    print_type = data.get("print")
     if print_type:
-        print_option = output_message.get("print_option", {})
+        print_option = data.get("print_option", {})
         return print_result(query_result, print_type, print_option)
 
     return query_result
