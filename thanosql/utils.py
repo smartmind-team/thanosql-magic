@@ -15,7 +15,7 @@ def format_result(output_dict: dict):
         print("Success")
         return 
     workspace_conn_info = data.get("workspace_conn_info")
-    query_list = data.get("query_list")
+    query_string_list = data.get("query_string_list")
     response_type = data.get("response_type")
     
     user = workspace_conn_info.get("user")
@@ -32,15 +32,15 @@ def format_result(output_dict: dict):
         
     with engine.connect() as conn:
         if response_type == "SELECT_DROP":
-            select_query = query_list[0]
+            select_query = query_string_list[0]
             result = pd.read_sql_query(select_query, conn)
-            drop_query = query_list[1]
+            drop_query = query_string_list[1]
             conn.execute(drop_query)
         elif response_type == "SELECT":
-            select_query = query_list[0]
+            select_query = query_string_list[0]
             result = pd.read_sql_query(select_query, conn)
         elif response_type == "NORMAL":
-            normal_query = query_list[0]
+            normal_query = query_string_list[0]
             try:
                 result = pd.read_sql_query(normal_query, conn)
             except:
