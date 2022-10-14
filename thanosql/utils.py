@@ -7,21 +7,21 @@ from thanosql.exceptions import ThanoSQLInternalError, ThanoSQLConnectionError
 import warnings
 
 
-def format_result(output_dict: dict):
+def format_result(query_context: str, output_dict: dict):
     warnings.simplefilter(action='ignore', category=UserWarning)
 
     data = output_dict["data"]
-    if not data.get("workspace_conn_info"):
+    if not data.get("workspace_db_info"):
         print("Success")
         return 
-    workspace_conn_info = data.get("workspace_conn_info")
+    workspace_db_info = data.get("workspace_db_info")
     query_string_list = data.get("query_string_list")
     response_type = data.get("response_type")
     
-    user = workspace_conn_info.get("user")
-    password = workspace_conn_info.get("password")
-    database = workspace_conn_info.get("database")
-    host = workspace_conn_info.get("host")
+    user = workspace_db_info.get("user")
+    password = workspace_db_info.get("password")
+    database = workspace_db_info.get("database")
+    host = workspace_db_info.get("host")
 
     connection_string = f"postgresql://{user}:{password}@/{database}?host={host}"
 
@@ -29,24 +29,26 @@ def format_result(output_dict: dict):
         engine = create_engine(connection_string)
     except:
         raise ThanoSQLConnectionError("Error connecting to workspace database")
-        
+
     with engine.connect() as conn:
-        if response_type == "SELECT_DROP":
-            select_query = query_string_list[0]
-            result = pd.read_sql_query(select_query, conn)
-            drop_query = query_string_list[1]
-            conn.execute(drop_query)
-        elif response_type == "SELECT":
-            select_query = query_string_list[0]
-            result = pd.read_sql_query(select_query, conn)
-        elif response_type == "NORMAL":
-            normal_query = query_string_list[0]
-            try:
-                result = pd.read_sql_query(normal_query, conn)
-            except:
-                result = "Success"
+        if query_string_list:
+            if response_type == "SELECT_DROP":
+                select_query = query_string_list[0]
+                result = pd.read_sql_query(select_query, conn)
+                drop_query = query_string_list[1]
+                conn.execute(drop_query)
+            elif response_type == "SELECT":
+                select_query = query_string_list[0]
+                result = pd.read_sql_query(select_query, conn)
+            else:
+                raise ThanoSQLInternalError("Invalid Response Type")
         else:
-            raise ThanoSQLInternalError("Invalid Response Type")
+            query_string = query_context.get("query_string")
+            try:
+                result = pd.read_sql_query(query_string, conn)
+            except:
+                print("Success")
+                return
     
     print_type = data.get("print")
     if print_type:
