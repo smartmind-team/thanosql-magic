@@ -4,19 +4,15 @@ from psycopg2 import connect
 from sqlalchemy import create_engine
 
 from thanosql.exceptions import ThanoSQLInternalError, ThanoSQLConnectionError
-import warnings
 
 
-def format_result(query_context: str, output_dict: dict):
-    warnings.simplefilter(action='ignore', category=UserWarning)
+def format_result(output_dict: dict):
 
     data = output_dict["data"]
-    if not data.get("workspace_db_info"):
-        print("Success")
-        return 
     workspace_db_info = data.get("workspace_db_info")
-    query_string_list = data.get("query_string_list")
+    query_string = data.get("query_string")
     response_type = data.get("response_type")
+    extra_query_string = data.get("extra_query_string")
     
     user = workspace_db_info.get("user")
     password = workspace_db_info.get("password")
@@ -31,24 +27,28 @@ def format_result(query_context: str, output_dict: dict):
         raise ThanoSQLConnectionError("Error connecting to workspace database")
 
     with engine.connect() as conn:
-        if query_string_list:
-            if response_type == "SELECT_DROP":
-                select_query = query_string_list[0]
-                result = pd.read_sql_query(select_query, conn)
-                drop_query = query_string_list[1]
-                conn.execute(drop_query)
-            elif response_type == "SELECT":
-                select_query = query_string_list[0]
-                result = pd.read_sql_query(select_query, conn)
-            else:
-                raise ThanoSQLInternalError("Invalid Response Type")
-        else:
-            query_string = query_context.get("query_string")
+        
+        if response_type == "NORMAL":
             try:
                 result = pd.read_sql_query(query_string, conn)
             except:
                 print("Success")
                 return
+
+        elif response_type == "SELECT":
+            result = pd.read_sql_query(query_string, conn)
+
+        elif response_type == "SELECT_DROP":
+            result = pd.read_sql_query(query_string, conn)
+            conn.execute(extra_query_string)
+
+        elif response_type is None:
+            print("Success")
+            return
+            
+        else:
+            raise ThanoSQLInternalError("Invalid Response Type")
+            
     
     print_type = data.get("print")
     if print_type:

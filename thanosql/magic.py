@@ -34,7 +34,7 @@ def request_thanosql_engine(ws, api_url, api_token, query_context):
             if output_dict["output_type"] == "MESSAGE":
                 print(output_dict["output_message"])
             elif output_dict["output_type"] == "RESULT":
-                return format_result(query_context, output_dict["output_message"])
+                return format_result(output_dict["output_message"])
             elif output_dict["output_type"] == "ERROR":
                 raise ThanoSQLInternalError(output_dict["output_message"])
 
