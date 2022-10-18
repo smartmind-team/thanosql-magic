@@ -34,7 +34,7 @@ def request_thanosql_engine(ws, api_url, api_token, query_context):
             if output_dict["output_type"] == "MESSAGE":
                 print(output_dict["output_message"])
             elif output_dict["output_type"] == "RESULT":
-                return format_result(output_dict)
+                return format_result(output_dict["output_message"])
             elif output_dict["output_type"] == "ERROR":
                 raise ThanoSQLInternalError(output_dict["output_message"])
 
@@ -77,7 +77,7 @@ class ThanosMagic(Magics):
 
         if not api_token:
             raise ThanoSQLConnectionError(
-                "An API Token is requierd. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
+                "An API Token is required. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
             )
 
         query_string = cell
