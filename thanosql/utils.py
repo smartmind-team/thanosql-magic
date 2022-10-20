@@ -1,9 +1,9 @@
 import pandas as pd
 from IPython.display import Audio, Image, Video, display
-from psycopg2 import connect
 from sqlalchemy import create_engine
+from sqlalchemy.exc import ResourceClosedError
 
-from thanosql.exceptions import ThanoSQLInternalError, ThanoSQLConnectionError
+from thanosql.exceptions import ThanoSQLConnectionError, ThanoSQLInternalError
 
 
 def format_result(output_dict: dict):
@@ -13,7 +13,7 @@ def format_result(output_dict: dict):
     query_string = data.get("query_string")
     response_type = data.get("response_type")
     extra_query_string = data.get("extra_query_string")
-    
+
     user = workspace_db_info.get("user")
     password = workspace_db_info.get("password")
     database = workspace_db_info.get("database")
@@ -27,11 +27,20 @@ def format_result(output_dict: dict):
         raise ThanoSQLConnectionError("Error connecting to workspace database")
 
     with engine.connect() as conn:
-        
         if response_type == "NORMAL":
             try:
                 result = pd.read_sql_query(query_string, conn)
-            except:
+            except ResourceClosedError:
+                """
+                ResourceClosedError will capture queries 
+                like INSERT and DROP that don’t return a value.
+                This is not the best solution as we are presumptuously assuming 
+                that the connection with the database will always be secure and succeed.
+                If a failure happens in the database, 
+                ResourceClosedError will be raised 
+                and “Success” will be printed out, which is a problem.
+                Therefore, this is subject to change in the future.
+                """
                 print("Success")
                 return
 
@@ -45,11 +54,10 @@ def format_result(output_dict: dict):
         elif response_type is None:
             print("Success")
             return
-            
+
         else:
             raise ThanoSQLInternalError("Invalid Response Type")
-            
-    
+
     print_type = data.get("print")
     if print_type:
         print_option = data.get("print_option", {})
