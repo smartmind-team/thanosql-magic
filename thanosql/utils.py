@@ -27,14 +27,20 @@ def format_result(output_dict: dict):
         raise ThanoSQLConnectionError("Error connecting to workspace database")
 
     with engine.connect() as conn:
-
         if response_type == "NORMAL":
             try:
                 result = pd.read_sql_query(query_string, conn)
-            # ResourceClosedError will capture queries like INSERT and DROP which doesn't return a value.
-            # This is not the best solution as it is heavily relying on ResourceClosedError to capture all the possible queries. 
-            # Therefore, this is subject to be changed in the future.
             except ResourceClosedError:
+                """
+                ResourceClosedError will capture queries 
+                like INSERT and DROP that don’t return a value.
+                This is not the best solution as we are presumptuously assuming 
+                that the connection with the database will always be secure and succeed.
+                If a failure happens in the database, 
+                ResourceClosedError will be raised 
+                and “Success” will be printed out, which is a problem.
+                Therefore, this is subject to change in the future.
+                """
                 print("Success")
                 return
 
