@@ -32,8 +32,8 @@ def format_result(output_dict: dict):
             try:
                 result = pd.read_sql_query(query_string, conn)
             # ResourceClosedError will capture queries like INSERT and DROP which doesn't return a value.
-            # This is not the best solution.
-            # Therefore, it is subject to be changed in the future.
+            # This is not the best solution as it is heavily relying on ResourceClosedError to capture all the possible queries. 
+            # Therefore, this is subject to be changed in the future.
             except ResourceClosedError:
                 print("Success")
                 return
