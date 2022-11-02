@@ -78,7 +78,7 @@ def print_result(query_df, print_type: str, print_option):
 
 
 def print_image(df, print_option):
-    column_name = print_option.get("image_column", "image_path")
+    column_name = print_option.get("image_col", "image_path")
     image_file_list = list(df[column_name])
 
     base_dir = print_option.get("base_dir", "")
@@ -91,7 +91,7 @@ def print_image(df, print_option):
 
 
 def print_audio(df, print_option):
-    column_name = print_option.get("audio_column", "audio_path")
+    column_name = print_option.get("audio_col", "audio_path")
     audio_file_list = list(df[column_name])
 
     base_dir = print_option.get("base_dir", "")
@@ -104,7 +104,7 @@ def print_audio(df, print_option):
 
 
 def print_video(df, print_option):
-    column_name = print_option.get("video_column", "video_path")
+    column_name = print_option.get("video_col", "video_path")
     video_file_list = list(df[column_name])
 
     base_dir = print_option.get("base_dir", "")
