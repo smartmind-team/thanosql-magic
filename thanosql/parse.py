@@ -1,4 +1,5 @@
 import re
+import pandas as pd
 from types import ModuleType
 
 
@@ -14,7 +15,10 @@ def convert_local_ns(query_string, local_ns) -> str:
     # modifying query_string
     for i in range(len(var_list)):
         var = local_ns.get(var_list[i])
-        if var:
+        if var is not None:
+            if isinstance(var, pd.DataFrame):
+                var = var.to_json(orient="records", force_ascii=False)
+                
             query_string = query_string.replace(var_list[i], f"'{str(var)}'")
 
     return query_string
