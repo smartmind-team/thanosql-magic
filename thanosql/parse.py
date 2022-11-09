@@ -10,7 +10,7 @@ def convert_local_ns(query_string, local_ns) -> str:
     }
 
     # variables need to be converted
-    var_list = list(set(map(str.strip, re.findall(r"=( *?\w+)", query_string))))
+    var_list = list(set(map(str.strip, re.findall(r"FROM( *?\w+)", query_string))))
 
     # modifying query_string
     for i in range(len(var_list)):
@@ -18,7 +18,7 @@ def convert_local_ns(query_string, local_ns) -> str:
         if var is not None:
             if isinstance(var, pd.DataFrame):
                 var = var.to_json(orient="records", force_ascii=False)
-                
+
             query_string = query_string.replace(var_list[i], f"'{str(var)}'")
 
     return query_string
