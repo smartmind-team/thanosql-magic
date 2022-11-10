@@ -15,15 +15,15 @@ def convert_local_ns(query_string, local_ns) -> str:
     var_list = list(set(t[1].strip(' ') for t in re.findall(regex, query_string)))
 
     # modifying query_string
-    for i in range(len(var_list)):
-        var = local_ns.get(var_list[i])
-        if var is not None:
-            if isinstance(var, pd.DataFrame):
-                var = var.to_json(orient="records", force_ascii=False)
+    for var in var_list:
+        local_var = local_ns.get(var)
+        if local_var is not None:
+            if isinstance(local_var, pd.DataFrame):
+                local_var = local_var.to_json(orient="records", force_ascii=False)
 
-            query_string = query_string.replace(var_list[i], f"'{str(var)}'")
-
-    return query_string
+            query_string = query_string.replace(var, f"'{str(local_var)}'")
+        
+        return query_string
 
 
 def is_url(s):
