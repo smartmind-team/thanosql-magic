@@ -9,9 +9,10 @@ def convert_local_ns(query_string, local_ns) -> str:
         key: val for key, val in local_ns.items() if not isinstance(val, ModuleType)
     }
 
-    # variables need to be converted
-    # below code finds all the variables come after "=" and "FROM"
-    var_list = list(set(t[1].strip(' ') for t in re.findall(r"(=|FROM)( *?\w+)", query_string)))
+    # find variables need to be converted
+    # below codes find all the variables come after "=" and "FROM"
+    regex = '(=|FROM)( *?\w+)'
+    var_list = list(set(t[1].strip(' ') for t in re.findall(regex, query_string)))
 
     # modifying query_string
     for i in range(len(var_list)):
