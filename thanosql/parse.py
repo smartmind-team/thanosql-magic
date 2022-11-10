@@ -10,17 +10,18 @@ def convert_local_ns(query_string, local_ns) -> str:
     }
 
     # find variables need to be converted
-    # below codes find all the variables come after "=" and "FROM"
-    regex = '(=|FROM)( *?\w+)'
-    var_list = list(set(t[1].strip(' ') for t in re.findall(regex, query_string)))
+    regex1 = '=( *?\w+)' # regex to find variables coming after "="
+    regex2 = 'FROM( *?\w+)' # regex to find variables coming after "FROM"
+    var_list = list(set(''.join(res).strip(' ') for res in re.findall(f'{regex1}|{regex2}', query_string)))
 
     # modifying query_string
     for var in var_list:
-        local_var = local_ns.get(var)
-        if local_var is not None:
+        if var in local_ns:
+            local_var = local_ns[var]
+            
             if isinstance(local_var, pd.DataFrame):
                 local_var = local_var.to_json(orient="records", force_ascii=False)
-
+            
             query_string = query_string.replace(var, f"'{str(local_var)}'")
         
         return query_string
