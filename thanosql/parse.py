@@ -10,7 +10,8 @@ def convert_local_ns(query_string, local_ns) -> str:
     }
 
     # variables need to be converted
-    var_list = list(set(map(str.strip, re.findall(r"FROM( *?\w+)", query_string))))
+    # below code finds all the variables come after "=" and "FROM"
+    var_list = list(set(t[1].strip(' ') for t in re.findall(r"(=|FROM)( *?\w+)", query_string)))
 
     # modifying query_string
     for i in range(len(var_list)):
