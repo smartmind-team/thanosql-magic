@@ -18,6 +18,7 @@ from thanosql.utils import format_result
 engine_cluster_ip = os.getenv("THANOSQL_ENGINE_SERVICE_HOST")
 DEFAULT_API_URL = f"ws://{engine_cluster_ip}/ws/v1/query"
 
+
 def request_thanosql_engine(ws, api_url, api_token, query_context):
     try:
         ws.connect(f"{api_url}?api_token={api_token}")
@@ -85,7 +86,6 @@ class ThanosMagic(Magics):
         if is_multiple_queries(query_string):
             raise ThanoSQLSyntaxError("Multiple Queries are not supported.")
 
-        query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "thanosql"}
 
         return request_thanosql_engine(self.ws, api_url, api_token, query_context)
@@ -104,7 +104,6 @@ class ThanosMagic(Magics):
 
         query_string = cell
 
-        query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "psql"}
 
         return request_thanosql_engine(self.ws, api_url, api_token, query_context)
