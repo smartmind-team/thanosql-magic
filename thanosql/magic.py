@@ -6,14 +6,13 @@ import requests
 import websocket
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 
-from thanosql.exceptions import (
+from thanosql.exception import (
     ThanoSQLConnectionError,
     ThanoSQLInternalError,
     ThanoSQLSyntaxError,
 )
 from thanosql.parse import *
-from thanosql.spinner import Spinner
-from thanosql.utils import format_result
+from thanosql.util import format_result
 
 engine_cluster_ip = os.getenv("THANOSQL_ENGINE_SERVICE_HOST")
 DEFAULT_API_URL = f"ws://{engine_cluster_ip}/ws/v1/query"
