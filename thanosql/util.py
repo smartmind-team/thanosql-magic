@@ -3,7 +3,7 @@ from IPython.display import Audio, Image, Video, display
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ResourceClosedError
 
-from thanosql.exceptions import ThanoSQLConnectionError, ThanoSQLInternalError
+from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError
 
 
 def format_result(output_dict: dict):
@@ -27,6 +27,7 @@ def format_result(output_dict: dict):
         raise ThanoSQLConnectionError("Error connecting to workspace database")
 
     with engine.connect() as conn:
+        result = None
         if response_type == "NORMAL":
             try:
                 result = pd.read_sql_query(query_string, conn)
@@ -42,7 +43,6 @@ def format_result(output_dict: dict):
                 Therefore, this is subject to change in the future.
                 """
                 print("Success")
-                return
 
         elif response_type == "SELECT":
             result = pd.read_sql_query(query_string, conn)
@@ -53,10 +53,9 @@ def format_result(output_dict: dict):
 
         elif response_type is None:
             print("Success")
-            return
 
-        else:
-            raise ThanoSQLInternalError("Invalid Response Type")
+    # close sqlalchemy(DB) engine
+    engine.dispose()
 
     print_type = data.get("print")
     if print_type:
