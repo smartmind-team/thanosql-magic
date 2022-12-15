@@ -28,6 +28,7 @@ def format_result(output_dict: dict):
 
     with engine.connect() as conn:
         result = None
+
         if response_type == "NORMAL":
             try:
                 result = pd.read_sql_query(query_string, conn)
