@@ -6,17 +6,17 @@ import requests
 import websocket
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 
-from thanosql.exceptions import (
+from thanosql.exception import (
     ThanoSQLConnectionError,
     ThanoSQLInternalError,
     ThanoSQLSyntaxError,
 )
 from thanosql.parse import *
-from thanosql.spinner import Spinner
-from thanosql.utils import format_result
+from thanosql.util import format_result
 
 engine_cluster_ip = os.getenv("THANOSQL_ENGINE_SERVICE_HOST")
 DEFAULT_API_URL = f"ws://{engine_cluster_ip}/ws/v1/query"
+
 
 def request_thanosql_engine(ws, api_url, api_token, query_context):
     try:
@@ -85,7 +85,6 @@ class ThanosMagic(Magics):
         if is_multiple_queries(query_string):
             raise ThanoSQLSyntaxError("Multiple Queries are not supported.")
 
-        query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "thanosql"}
 
         return request_thanosql_engine(self.ws, api_url, api_token, query_context)
@@ -104,7 +103,6 @@ class ThanosMagic(Magics):
 
         query_string = cell
 
-        query_string = convert_local_ns(query_string, local_ns)
         query_context = {"query_string": query_string, "query_type": "psql"}
 
         return request_thanosql_engine(self.ws, api_url, api_token, query_context)
