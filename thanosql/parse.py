@@ -18,5 +18,13 @@ def is_api_token(s):
         return False
 
 
+def remove_df_from_query(s):
+    # regex below searches and removes df(json, orient="records") from the query string
+    # regex detects "[{df_data}]" or '[{df_data}]'
+    removed_df_s = re.sub("('|\")\\[[^\\]']*]('|\")", "", s)
+    return removed_df_s
+
+
 def is_multiple_queries(s):
-    return ";" in s
+    removed_df_s = remove_df_from_query(s)
+    return ";" in removed_df_s
