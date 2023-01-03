@@ -1,5 +1,5 @@
 from codecs import open
-from os import path
+from os import environ, path
 
 from setuptools import find_packages, setup
 
@@ -10,13 +10,11 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
-pkg_vars = {}
-with open("thanosql/version.py") as f:
-    exec(f.read(), pkg_vars)
+version = environ.get("THANOSQL_MAGIC_VERSION")
 
 setup(
     name=pkg_name,
-    version=pkg_vars["__version__"],
+    version=version,
     description="ThanoSQL Magic",
     long_description=long_description,
     url="https://github.com/smartmind-team/thanosql-magic",
