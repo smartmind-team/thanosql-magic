@@ -34,12 +34,12 @@ def format_result(output_dict: dict):
                 result = pd.read_sql_query(query_string, conn)
             except ResourceClosedError:
                 """
-                ResourceClosedError will capture queries 
+                ResourceClosedError will capture queries
                 like INSERT and DROP that don’t return a value.
-                This is not the best solution as we are presumptuously assuming 
+                This is not the best solution as we are presumptuously assuming
                 that the connection with the database will always be secure and succeed.
-                If a failure happens in the database, 
-                ResourceClosedError will be raised 
+                If a failure happens in the database,
+                ResourceClosedError will be raised
                 and “Success” will be printed out, which is a problem.
                 Therefore, this is subject to change in the future.
                 """
