@@ -20,6 +20,6 @@ def is_api_token(s):
 
 def is_multiple_queries(query_string):
     # regex below finds substring that starts with '[ or "[ and ends with ]' or ]" 
-    # it removes all the unncessary semicolons
+    # It removes all the substrings containing semicolon which does not need to be checked.
     processed_query_string = re.sub('''('|")\[[^']*\]('|")''', "", query_string)
     return ";" in processed_query_string
