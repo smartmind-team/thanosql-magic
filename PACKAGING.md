@@ -1,5 +1,9 @@
 # Pypi
 
+23.01.05 이후에는 GitHub Actions 사용하는 형태로 바꾸었습니다.
+
+(deprecated)
+
 1. pypi 계정 만들기
 2. prepare `setup.py`
 3. 기존에 있던 빌드 관련된 폴더들은 지우고 새로 하는 것이 좋음.
