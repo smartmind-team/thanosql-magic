@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 from IPython.display import Audio, Image, Video, display
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ResourceClosedError
@@ -19,7 +19,9 @@ def format_result(output_dict: dict):
     database = workspace_db_info.get("database")
     host = workspace_db_info.get("host")
 
-    connection_string = f"postgresql://{user}:{password}@/{database}?host={host}"
+    connection_string = (
+        f"postgresql://{user}:{password}@server:5432/{database}?host={host}"
+    )
 
     try:
         engine = create_engine(connection_string)
@@ -31,25 +33,16 @@ def format_result(output_dict: dict):
 
         if response_type == "NORMAL":
             try:
-                result = pd.read_sql_query(query_string, conn)
-            except ResourceClosedError:
-                """
-                ResourceClosedError will capture queries
-                like INSERT and DROP that don’t return a value.
-                This is not the best solution as we are presumptuously assuming
-                that the connection with the database will always be secure and succeed.
-                If a failure happens in the database,
-                ResourceClosedError will be raised
-                and “Success” will be printed out, which is a problem.
-                Therefore, this is subject to change in the future.
-                """
+                result = pl.read_sql(query_string, connection_string).to_pandas()
+            except:
+                conn.execute(query_string)
                 print("Success")
 
         elif response_type == "SELECT":
-            result = pd.read_sql_query(query_string, conn)
+            result = pl.read_sql(query_string, connection_string).to_pandas()
 
         elif response_type == "SELECT_DROP":
-            result = pd.read_sql_query(query_string, conn)
+            result = pl.read_sql(query_string, connection_string).to_pandas()
             conn.execute(extra_query_string)
 
         elif response_type is None:
