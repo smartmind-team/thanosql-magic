@@ -10,9 +10,10 @@ def format_result(output_dict: dict):
 
     data = output_dict["data"]
     workspace_db_info = data.get("workspace_db_info")
-    query_string = text(data.get("query_string"))
     response_type = data.get("response_type")
-    extra_query_string = data.get("extra_query_string")
+
+    query_string = text(data.get("query_string"))
+    extra_query_string = text(data.get("extra_query_string"))
 
     user = workspace_db_info.get("user")
     password = workspace_db_info.get("password")
