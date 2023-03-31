@@ -1,6 +1,6 @@
 import pandas as pd
 from IPython.display import Audio, Image, Video, display
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ResourceClosedError
 
 from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError
@@ -10,9 +10,10 @@ def format_result(output_dict: dict):
 
     data = output_dict["data"]
     workspace_db_info = data.get("workspace_db_info")
-    query_string = data.get("query_string")
     response_type = data.get("response_type")
-    extra_query_string = data.get("extra_query_string")
+
+    query_string = text(data.get("query_string"))
+    extra_query_string = text(data.get("extra_query_string"))
 
     user = workspace_db_info.get("user")
     password = workspace_db_info.get("password")
