@@ -26,19 +26,21 @@ Once installed, you can load the extension in your Jupyter notebook by running:
 
 After loading the extension, you can connect to your ThanoSQL Engine instance by setting the thanosql variable:
 
-1. Set API_TOKEN
+1. Setting API_TOKEN
 
    ```python
    %thanosql API_TOKEN=<Issued_API_TOKEN>
    ```
 
-1. change default API uri (optional)
+1. Changing the Default API URI (Optional)
 
    ```python
    %thanosql http://localhost:8000/api/v1/query
    ```
 
-3. use magic You can then execute SQL queries on your Thanos data using the %thanosql magic command:
+3. Using Magic Commands
+
+   You can then execute SQL queries on your Thanos data using the %thanosql magic command:
 
    ```python
    %%thanosql
