@@ -12,8 +12,8 @@ def format_result(output_dict: dict):
     workspace_db_info = data.get("workspace_db_info")
     response_type = data.get("response_type")
 
-    query_string = text(data.get("query_string"))
-    extra_query_string = text(data.get("extra_query_string"))
+    query_string = data.get("query_string")
+    extra_query_string = data.get("extra_query_string")
 
     user = workspace_db_info.get("user")
     password = workspace_db_info.get("password")
@@ -32,7 +32,7 @@ def format_result(output_dict: dict):
 
         if response_type == "NORMAL":
             try:
-                result = pd.read_sql_query(query_string, conn)
+                result = pd.read_sql_query(text(query_string), conn)
             except ResourceClosedError:
                 """
                 ResourceClosedError will capture queries
@@ -47,11 +47,11 @@ def format_result(output_dict: dict):
                 print("Success")
 
         elif response_type == "SELECT":
-            result = pd.read_sql_query(query_string, conn)
+            result = pd.read_sql_query(text(query_string), conn)
 
         elif response_type == "SELECT_DROP":
-            result = pd.read_sql_query(query_string, conn)
-            conn.execute(extra_query_string)
+            result = pd.read_sql_query(text(query_string), conn)
+            conn.execute(text(extra_query_string))
 
         elif response_type is None:
             print("Success")
