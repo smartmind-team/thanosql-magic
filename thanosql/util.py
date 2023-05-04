@@ -1,6 +1,6 @@
 import pandas as pd
 from IPython.display import Audio, Image, Video, display
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ResourceClosedError
 
 from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError
@@ -10,8 +10,9 @@ def format_result(output_dict: dict):
 
     data = output_dict["data"]
     workspace_db_info = data.get("workspace_db_info")
-    query_string = data.get("query_string")
     response_type = data.get("response_type")
+
+    query_string = data.get("query_string")
     extra_query_string = data.get("extra_query_string")
 
     user = workspace_db_info.get("user")
@@ -31,7 +32,7 @@ def format_result(output_dict: dict):
 
         if response_type == "NORMAL":
             try:
-                result = pd.read_sql_query(query_string, conn)
+                result = pd.read_sql_query(text(query_string), conn)
             except ResourceClosedError:
                 """
                 ResourceClosedError will capture queries
@@ -46,11 +47,11 @@ def format_result(output_dict: dict):
                 print("Success")
 
         elif response_type == "SELECT":
-            result = pd.read_sql_query(query_string, conn)
+            result = pd.read_sql_query(text(query_string), conn)
 
         elif response_type == "SELECT_DROP":
-            result = pd.read_sql_query(query_string, conn)
-            conn.execute(extra_query_string)
+            result = pd.read_sql_query(text(query_string), conn)
+            conn.execute(text(extra_query_string))
 
         elif response_type is None:
             print("Success")
