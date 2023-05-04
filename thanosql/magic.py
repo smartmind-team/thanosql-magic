@@ -1,8 +1,6 @@
 import json
 import os
 
-import pandas as pd
-import requests
 import websocket
 from IPython.core.magic import Magics, line_cell_magic, magics_class, needs_local_scope
 
@@ -11,14 +9,27 @@ from thanosql.exception import (
     ThanoSQLInternalError,
     ThanoSQLSyntaxError,
 )
-from thanosql.parse import *
+from thanosql.parse import (
+    is_url, 
+    is_api_token, 
+    is_multiple_queries, 
+    is_db_user, 
+    is_db_password
+)
 from thanosql.util import format_result
 
 engine_cluster_ip = os.getenv("THANOSQL_ENGINE_SERVICE_HOST")
 DEFAULT_API_URL = f"ws://{engine_cluster_ip}/ws/v1/query"
 
 
-def request_thanosql_engine(ws, api_url, api_token, query_context):
+def request_thanosql_engine(
+        ws: websocket.WebSocket, 
+        api_url: str, 
+        api_token:str, 
+        query_context: dict, 
+        db_user: str, 
+        db_password: str
+    ):
     try:
         ws.connect(f"{api_url}?api_token={api_token}")
     except:
@@ -34,7 +45,11 @@ def request_thanosql_engine(ws, api_url, api_token, query_context):
             if output_dict["output_type"] == "MESSAGE":
                 print(output_dict["output_message"])
             elif output_dict["output_type"] == "RESULT":
-                return format_result(output_dict["output_message"])
+                return format_result(
+                    output_dict=output_dict["output_message"], 
+                    db_user=db_user, 
+                    db_password=db_password
+                )
             elif output_dict["output_type"] == "ERROR":
                 raise ThanoSQLInternalError(output_dict["output_message"])
 
@@ -64,6 +79,20 @@ class ThanosMagic(Magics):
                 os.environ["API_TOKEN"] = api_token
                 print(f"API Token is set as '{api_token}'")
                 return
+            
+            elif is_db_user(line):
+                # Set DB Username
+                db_user = line.strip().split("DB_USER=")[-1]
+                os.environ["DB_USER"] = db_user
+                print(f"DB Username set to {db_user}")
+                return
+
+            elif is_db_password(line):
+                # Set DB Password
+                db_password = line.strip().split("DB_PASSWORD=")[-1]
+                os.environ["DB_PASSWORD"] = db_password
+                print(f"DB Password set to {db_password}")
+                return
 
             # 'line' will be treated the same as 'cell'
             else:
@@ -74,10 +103,17 @@ class ThanosMagic(Magics):
 
         api_url = os.getenv("API_URL", DEFAULT_API_URL)
         api_token = os.getenv("API_TOKEN", None)
+        db_user = os.getenv("DB_USER", None)
+        db_password = os.getenv("DB_PASSWORD", None)
 
         if not api_token:
             raise ThanoSQLConnectionError(
                 "An API Token is required. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
+            )
+        
+        if not (db_user and db_password):
+            raise ThanoSQLConnectionError(
+                "Database information is required for connection"
             )
 
         query_string = cell
@@ -87,7 +123,7 @@ class ThanosMagic(Magics):
 
         query_context = {"query_string": query_string, "query_type": "thanosql"}
 
-        return request_thanosql_engine(self.ws, api_url, api_token, query_context)
+        return request_thanosql_engine(self.ws, api_url, api_token, query_context, db_user, db_password)
 
     @needs_local_scope
     @line_cell_magic
@@ -100,12 +136,24 @@ class ThanosMagic(Magics):
 
         api_url = os.getenv("API_URL", DEFAULT_API_URL)
         api_token = os.getenv("API_TOKEN", None)
+        db_user = os.getenv("DB_USER", None)
+        db_password = os.getenv("DB_PASSWORD", None)
+
+        if not api_token:
+            raise ThanoSQLConnectionError(
+                "An API Token is required. Set the API Token by running the following: %thanosql API_TOKEN=<API_TOKEN>"
+            )
+        
+        if not (db_user and db_password):
+            raise ThanoSQLConnectionError(
+                "Database information is required for connection"
+            )
 
         query_string = cell
 
         query_context = {"query_string": query_string, "query_type": "psql"}
 
-        return request_thanosql_engine(self.ws, api_url, api_token, query_context)
+        return request_thanosql_engine(self.ws, api_url, api_token, query_context, db_user, db_password)
 
 
 # In order to actually use these magics, you must register them with a
