@@ -6,7 +6,7 @@ from sqlalchemy.exc import ResourceClosedError
 from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError
 
 
-def format_result(output_dict: dict):
+def format_result(output_dict: dict, db_user: str, db_password: str):
 
     data = output_dict["data"]
     workspace_db_info = data.get("workspace_db_info")
@@ -15,12 +15,10 @@ def format_result(output_dict: dict):
     query_string = data.get("query_string")
     extra_query_string = data.get("extra_query_string")
 
-    user = workspace_db_info.get("user")
-    password = workspace_db_info.get("password")
     database = workspace_db_info.get("database")
     host = workspace_db_info.get("host")
 
-    connection_string = f"postgresql://{user}:{password}@/{database}?host={host}"
+    connection_string = f"postgresql://{db_user}:{db_password}@/{database}?host={host}"
 
     try:
         engine = create_engine(connection_string)
