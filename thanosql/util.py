@@ -120,10 +120,11 @@ def print_video(df, print_option):
 
 def stream_sql_results(conn: Connection, query_string: str) -> pd.DataFrame:
     dfs = []
+    conn = conn.execution_options(stream_results=True)
     for chunk_df in pd.read_sql_query(
         text(query_string), 
-        conn.execution_options(stream_results=True),
-        chunksize=1000):
+        conn,
+        chunksize=10000):
         dfs.append(chunk_df)
     result = pd.concat(dfs)
     return result
