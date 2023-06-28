@@ -28,7 +28,7 @@ def format_result(output_dict: dict):
     except:
         raise ThanoSQLConnectionError("Error connecting to workspace database")
 
-    with engine.connect() as conn:
+    with engine.connect().execution_options(stream_results=True) as conn:
         result = None
 
         if response_type == "NORMAL":
@@ -120,7 +120,6 @@ def print_video(df, print_option):
 
 def stream_sql_results(conn: Connection, query_string: str) -> pd.DataFrame:
     dfs = []
-    conn = conn.execution_options(stream_results=True)
     for chunk_df in pd.read_sql_query(
         text(query_string), 
         conn,
