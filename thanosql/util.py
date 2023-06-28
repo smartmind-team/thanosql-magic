@@ -1,6 +1,7 @@
 import pandas as pd
 from IPython.display import Audio, Image, Video, display
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Connection
 from sqlalchemy.exc import ResourceClosedError
 
 from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError
@@ -27,12 +28,13 @@ def format_result(output_dict: dict):
     except:
         raise ThanoSQLConnectionError("Error connecting to workspace database")
 
-    with engine.connect() as conn:
+    with engine.connect().execution_options(stream_results=True) as conn:
         result = None
 
         if response_type == "NORMAL":
             try:
-                result = pd.read_sql_query(text(query_string), conn)
+                result = stream_sql_results(conn=conn, query_string=query_string)
+
             except ResourceClosedError:
                 """
                 ResourceClosedError will capture queries
@@ -47,10 +49,10 @@ def format_result(output_dict: dict):
                 print("Success")
 
         elif response_type == "SELECT":
-            result = pd.read_sql_query(text(query_string), conn)
+            result = stream_sql_results(conn=conn, query_string=query_string)
 
         elif response_type == "SELECT_DROP":
-            result = pd.read_sql_query(text(query_string), conn)
+            result = stream_sql_results(conn=conn, query_string=query_string)
             conn.execute(text(extra_query_string))
 
         elif response_type is None:
@@ -115,3 +117,13 @@ def print_video(df, print_option):
         print(video_full_path)
         display(Video(video_full_path, embed=True))
     return
+
+def stream_sql_results(conn: Connection, query_string: str) -> pd.DataFrame:
+    dfs = []
+    for chunk_df in pd.read_sql_query(
+        text(query_string), 
+        conn,
+        chunksize=10000):
+        dfs.append(chunk_df)
+    result = pd.concat(dfs)
+    return result
