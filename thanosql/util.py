@@ -1,10 +1,13 @@
 import pandas as pd
+import pglast
+import re
 from IPython.display import Audio, Image, Video, display
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Connection
 from sqlalchemy.exc import ResourceClosedError
 
-from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError
+
+from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError, ThanoSQLSyntaxError
 
 
 def format_result(output_dict: dict):
@@ -28,31 +31,23 @@ def format_result(output_dict: dict):
     except:
         raise ThanoSQLConnectionError("Error connecting to workspace database")
 
-    with engine.connect().execution_options(stream_results=True) as conn:
+    with engine.connect() as conn:
         result = None
 
         if response_type == "NORMAL":
-            try:
+            if get_query_type(query_string=query_string) == "SELECT":
                 result = stream_sql_results(conn=conn, query_string=query_string)
-
-            except ResourceClosedError:
-                """
-                ResourceClosedError will capture queries
-                like INSERT and DROP that don’t return a value.
-                This is not the best solution as we are presumptuously assuming
-                that the connection with the database will always be secure and succeed.
-                If a failure happens in the database,
-                ResourceClosedError will be raised
-                and “Success” will be printed out, which is a problem.
-                Therefore, this is subject to change in the future.
-                """
+            else:
+                conn.execute(text(query_string))
                 print("Success")
+
 
         elif response_type == "SELECT":
             result = stream_sql_results(conn=conn, query_string=query_string)
 
         elif response_type == "SELECT_DROP":
             result = stream_sql_results(conn=conn, query_string=query_string)
+            conn.execution_options(stream_results=False)
             conn.execute(text(extra_query_string))
 
         elif response_type is None:
@@ -122,8 +117,27 @@ def stream_sql_results(conn: Connection, query_string: str) -> pd.DataFrame:
     dfs = []
     for chunk_df in pd.read_sql_query(
         text(query_string), 
-        conn,
+        conn.execution_options(stream_results=True),
         chunksize=10000):
         dfs.append(chunk_df)
     result = pd.concat(dfs)
     return result
+
+def get_query_type(query_string: str) -> str:
+    try:
+        query_type = "_".join(
+                    map(
+                        str,
+                        re.findall(
+                            "[A-Z][^A-Z]*",
+                            pglast.parser.parse_sql(query_string)[
+                                0
+                            ].stmt.__class__.__name__.replace("Stmt", ""),
+                        ),
+                    )
+                ).upper()
+        
+    except pglast.parser.ParseError as e:
+        raise ThanoSQLSyntaxError(str(e))
+
+    return query_type
