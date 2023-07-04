@@ -39,7 +39,7 @@ def format_result(output_dict: dict):
                 result = stream_sql_results(conn=conn, query_string=query_string)
             else:
                 try:
-                    result = conn.execute(text(query_string))
+                    result = pd.read_sql_query(text(query_string), conn)
                 except ResourceClosedError:
                     """
                     ResourceClosedError will capture queries
