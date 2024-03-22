@@ -7,7 +7,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.exc import ResourceClosedError
 
 
-from thanosql.exception import ThanoSQLConnectionError, ThanoSQLInternalError, ThanoSQLSyntaxError
+from thanosql_magic.exception import ThanoSQLConnectionError, ThanoSQLInternalError, ThanoSQLSyntaxError
 
 
 def format_result(output_dict: dict):
